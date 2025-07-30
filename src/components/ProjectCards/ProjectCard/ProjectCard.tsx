@@ -40,11 +40,11 @@ export default function ProjectCard({ project, isUserAttendEvent }: ProjectCardP
     });
   const { mutateAsync: deleteComment } =
   api.projects.deleteComment.useMutation({
-    onSuccess: async () => {
-      await utils.events.findUnique.invalidate({
-        id: project.eventId,
-      });
-    },
+      onSuccess: async () => {
+        await utils.events.findUnique.invalidate({
+          id: project.eventId,
+        });
+      },
   });
   const { mutateAsync: editComment } =
   api.projects.updateComment.useMutation({
@@ -137,23 +137,23 @@ export default function ProjectCard({ project, isUserAttendEvent }: ProjectCardP
       onSuccess: async () => {
         await Promise.all([
           utils.events.findUnique.invalidate({
-          id: project.eventId,
-        }),
-        utils.projects.findUnique.invalidate({
-          id: project.eventId,
-        }),
-      ]);
+            id: project.eventId,
+          }),
+          utils.projects.findUnique.invalidate({
+            id: project.eventId,
+          }),
+        ]);
       },
     });
 
-  const { mutateAsync: deleteAllProjectComments } = 
+  const { mutateAsync: deleteAllProjectComments } =
     api.projects.deleteAllProjectComments.useMutation({
-    onSuccess: async () => {
-      await utils.events.findUnique.invalidate({
-        id: project.eventId,
-      });
+      onSuccess: async () => {
+        await utils.events.findUnique.invalidate({
+          id: project.eventId,
+        });
     }
-  });
+    });
 
   const handleAttendEvent = async () => {
     console.log("userID: ", user?.role);
@@ -170,15 +170,15 @@ export default function ProjectCard({ project, isUserAttendEvent }: ProjectCardP
           id: project.eventId,
         });
       },
-  });
+    });
 
   const handleJoinProject = async () => {
     await joinProject({
       projectId: project.id,
       userId: user?.id || "",
-  });
+    });
 
-    // add user to the event if not already not attending 
+    // add user to the event if not already not attending
     if (!isUserAttendingEvent) {
       await attendEvent({
         eventId: project.eventId,
@@ -235,7 +235,6 @@ export default function ProjectCard({ project, isUserAttendEvent }: ProjectCardP
     setIsEditModalOpen(false);
   };
 
-
   return (
     <>
       <EditProjectModal
@@ -244,146 +243,147 @@ export default function ProjectCard({ project, isUserAttendEvent }: ProjectCardP
         project={project}
         onEdit={handleEditProject}
         onCancel={handleCancelEdit}
-    />
-    <div
-      key={project.id}
-      className="flex w-full flex-col overflow-hidden rounded-lg shadow-lg"
-    >
-      <div className="flex flex-1 flex-col justify-between bg-white p-6">
-        <div className="flex-1">
-          <div className="mt-2 block">
-            <div className="text-xl font-semibold text-gray-700">
-              {project.name}
-            </div>
-            <div className="py-2">
-              <TechTagRow techs={project.techs} />
-            </div>
-            {user && (
+      />
+      <div
+        key={project.id}
+        className="flex w-full flex-col overflow-hidden rounded-lg shadow-lg"
+      >
+        <div className="flex flex-1 flex-col justify-between bg-white p-6">
+          <div className="flex-1">
+            <div className="mt-2 block">
+              <div className="text-xl font-semibold text-gray-700">
+                {project.name}
+              </div>
+              <div className="py-2">
+                <TechTagRow techs={project.techs} />
+              </div>
+              {user && (
               <div className="py-2 flex items-center justify-between">
-              <PillButton
-                label={
-                joinProjectIsLoading || leaveProjectIsLoading
-                  ? "Loading..."
-                  : project.isMember
-                  ? "Leave Project"
-                  : "Join Project"
-                }
-                isMember={project?.isMember}
-                isUserPartOfAnyProject={project.isUserPartOfAnyProject}
-                isLoading={joinProjectIsLoading || leaveProjectIsLoading}
-                handleClick={
-                joinProjectIsLoading || leaveProjectIsLoading
-                  ? () => void null
-                  : project?.isMember
-                  ? handleLeaveProject
-                  : handleJoinProject
-                }
-              />
+                  <PillButton
+                    label={
+                      joinProjectIsLoading || leaveProjectIsLoading
+                        ? "Loading..."
+                        : project.isMember
+                        ? "Leave Project"
+                        : "Join Project"
+                    }
+                    isMember={project?.isMember}
+                    isUserPartOfAnyProject={project.isUserPartOfAnyProject}
+                    isLoading={joinProjectIsLoading || leaveProjectIsLoading}
+                    handleClick={
+                      joinProjectIsLoading || leaveProjectIsLoading
+                        ? () => void null
+                        : project?.isMember
+                        ? handleLeaveProject
+                        : handleJoinProject
+                    }
+                  />
               {(user.id === project.author.id || user.role === "MOD" || user.role === "ADMIN") && (
-                <div className="flex space-x-4">
-                <PillButton
+                    <div className="flex space-x-4">
+                      <PillButton
                   label={
                     editProjectIsLoading
                     ? "Loading..."
                     : "Edit"
                   }
-                  isMember={project?.isMember}
-                  isUserPartOfAnyProject={false}
-                  isLoading={editProjectIsLoading}
-                  handleClick={() => setIsEditModalOpen(true)}
-                />
-                <PillButton 
+                        isMember={project?.isMember}
+                        isUserPartOfAnyProject={false}
+                        isLoading={editProjectIsLoading}
+                        handleClick={() => setIsEditModalOpen(true)}
+                      />
+                      <PillButton
                   label={
                     deleteProjectIsLoading
                     ? "Loading..."
                     : "Delete" 
                   }
-                  isMember={project?.isMember}
-                  isUserPartOfAnyProject={false}
-                  isLoading={deleteProjectIsLoading}
-                  handleClick={handleDeleteProject}
-                />
+                        isMember={project?.isMember}
+                        isUserPartOfAnyProject={false}
+                        isLoading={deleteProjectIsLoading}
+                        handleClick={handleDeleteProject}
+                      />
+                    </div>
+                  )}
                 </div>
               )}
-              </div>
-            )}
-            {project.members && project.members?.length > 0 && (
-              <div className="flex flex-row flex-wrap items-center gap-2 text-sm font-light">
-                <span className="font-bold">Members:</span>
-                <MemberTagRow members={project?.members} />
-              </div>
-            )}
-            <div className="mt-3 text-base text-gray-500">
-              {project.description}
+              {project.members && project.members?.length > 0 && (
+                <div className="flex flex-row flex-wrap items-center gap-2 text-sm font-light">
+                  <span className="font-bold">Members:</span>
+                  <MemberTagRow members={project?.members} />
+                </div>
+              )}
+              <div
+                className="prose mt-3 text-base leading-none text-gray-500"
+                dangerouslySetInnerHTML={{ __html: project.description }}
+              />
             </div>
           </div>
-        </div>
-        <div className="mt-6 flex flex-row items-center justify-between">
-          <div className="flex flex-row items-center gap-10">
-            <div>
-              <span className="text-sm font-medium text-gray-900">
-                {project.author.name}
-              </span>
-              <div className="flex space-x-1 text-sm text-gray-500">
-                <div>
-                  {format(new Date(project.createdAt), "MMMM dd, yyyy")}
+          <div className="mt-6 flex flex-row items-center justify-between">
+            <div className="flex flex-row items-center gap-10">
+              <div>
+                <span className="text-sm font-medium text-gray-900">
+                  {project.author.name}
+                </span>
+                <div className="flex space-x-1 text-sm text-gray-500">
+                  <div>
+                    {format(new Date(project.createdAt), "MMMM dd, yyyy")}
+                  </div>
                 </div>
               </div>
             </div>
+            <div className="flex flex-col items-center justify-center">
+              <motion.div
+                whileHover={{
+                  scale: 1.1,
+                }}
+                whileTap={{ scale: 0.97 }}
+              >
+                {user ? (
+                  likeExists ? (
+                    <HandThumbUpIconSolid
+                      onClick={handleUpvote}
+                      className="block h-6 w-6 cursor-pointer text-gray-700"
+                    />
+                  ) : (
+                    <HandThumbUpIcon
+                      onClick={handleUpvote}
+                      className="block h-6 w-6 cursor-pointer text-gray-700"
+                    />
+                  )
+                ) : null}
+              </motion.div>
+              <div>{project._count?.likes ?? 0} Likes</div>
+            </div>
           </div>
-          <div className="flex flex-col items-center justify-center">
-            <motion.div
-              whileHover={{
-                scale: 1.1,
-              }}
-              whileTap={{ scale: 0.97 }}
-            >
-              {user ? (
-                likeExists ? (
-                  <HandThumbUpIconSolid
-                    onClick={handleUpvote}
-                    className="block h-6 w-6 cursor-pointer text-gray-700"
-                  />
-                ) : (
-                  <HandThumbUpIcon
-                    onClick={handleUpvote}
-                    className="block h-6 w-6 cursor-pointer text-gray-700"
-                  />
-                )
-              ) : null}
-            </motion.div>
-            <div>{project._count?.likes ?? 0} Likes</div>
-          </div>
-        </div>
-        {user && (
-          <div className="pt-4">
-            <CommentTextArea
+          {user && (
+            <div className="pt-4">
+              <CommentTextArea
+                isLoading={isLoading}
+                handleSubmit={handleSubmit}
+                register={register}
+                onSubmit={onCommentSubmit}
+                rows={2}
+              />
+            </div>
+          )}
+          {project.comments?.map((comment) => (
+            <CommentBubble
               isLoading={isLoading}
-              handleSubmit={handleSubmit}
-              register={register}
-              onSubmit={onCommentSubmit}
-              rows={2}
+              onDelete={onCommentDelete}
+              onEdit={onCommentEdit}
+              key={comment.id}
+              image={comment.user?.image}
+              username={comment.user.name}
+              userIsPoster={comment.user.id == user?.id || false}
+              createdAt={comment.createdAt}
+              comment={comment.comment}
+              commentId={comment.id}
+              userTitle={comment.user.title}
+              userTechs={comment.user.techs}
             />
-          </div>
-        )}
-        {project.comments?.map((comment) => (
-          <CommentBubble
-            isLoading={isLoading}
-            onDelete={onCommentDelete}
-            onEdit={onCommentEdit}
-            key={comment.id}
-            image={comment.user?.image}
-            username={comment.user.name}
-            userIsPoster={comment.user.id == user?.id || false}
-            createdAt={comment.createdAt}
-            comment={comment.comment}
-            commentId={comment.id}
-            userTitle={comment.user.title}
-            userTechs={comment.user.techs}
-          />
-        ))}
+          ))}
+        </div>
       </div>
-    </div>
     </>
   );
 }
