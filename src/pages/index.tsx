@@ -20,7 +20,7 @@ const Home: NextPage = () => {
               <span className="block text-gray-600 xl:inline">build stuff</span>
             </h1>
             <p className="mx-auto mt-3 max-w-md text-lg text-gray-500 sm:text-xl md:mt-5 md:max-w-3xl">
-              Software Developers of Calgary is a community where developers can
+              Software Developers Collective is a community where developers can
               learn together by building together. Come to one of our mini
               hackathon events and meet some cool people!
             </p>
