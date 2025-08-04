@@ -22,7 +22,7 @@ const HomePage: NextPage = () => {
             <p className="mx-auto mt-3 max-w-md text-lg text-gray-500 sm:text-xl md:mt-5 md:max-w-3xl">
               Software Developers Collective is a community where developers can
               learn together by building together. Come to one of our mini
-              hackathon events and meet some cool people!
+              hackathon events and meet some super cool people!
             </p>
             <div className="mt-10 sm:flex sm:justify-center lg:justify-start">
               <div className="rounded-md shadow">
