@@ -16,6 +16,7 @@ import {
   useState,
 } from "react";
 import { useForm } from "react-hook-form";
+import { TextEditor } from "../TextEditor/TextEditor";
 
 interface Props {
   isOpen: boolean;
@@ -60,13 +61,13 @@ interface ProjectModel {
   techs: Tech[];
 }
 
-export default function NewProjectModal({ 
-    isOpen,
-    setIsOpen,
-    initialData,
-    onSubmit: customSubmit,
+export default function NewProjectModal({
+  isOpen,
+  setIsOpen,
+  initialData,
+  onSubmit: customSubmit,
     mode = 'create' 
-  }: Props) {
+}: Props) {
   const router = useRouter();
   const utils = api.useContext();
   const { id: eventUuid } = router.query;
@@ -83,7 +84,7 @@ export default function NewProjectModal({
     })) || []
   );
 
-  const { handleSubmit, register, reset } = useForm({
+  const { handleSubmit, register, reset, watch } = useForm({
     defaultValues: {
       title: initialData?.title || '',
       description: initialData?.description || ''
@@ -114,8 +115,6 @@ export default function NewProjectModal({
       await createProject(newProjectObj);
     }
   };
-
-  
 
   if (isLoading) return null;
   if (isError) return <div>Error!!</div>;
@@ -219,14 +218,11 @@ export default function NewProjectModal({
                             >
                               Description
                             </label>
-                            <textarea
+                            <TextEditor
                               {...register("description", {
                                 required: true,
                               })}
-                              id="description"
-                              rows={4}
-                              autoComplete="description"
-                              className="mt-1 block w-full rounded-md border-gray-300 p-2 shadow-sm focus:border-gray-500 focus:ring-gray-500 sm:text-sm"
+                              value={watch("description")}
                             />
                           </div>
                         </div>
