@@ -52,28 +52,31 @@ export function TextEditor({ value, name, onChange }: TextEditorProps) {
 }
 
 function MenuBar({ editor }: { editor: Editor | null }) {
-  if (!editor) {
-    return <>loading...</>; // Prevent crash on initial render
-  }
   // Read the current editor's state, and re-render the component when it changes
   const editorState = useEditorState({
     editor,
     selector: (ctx) => {
       return {
-        isBold: ctx.editor.isActive("bold") ?? false,
-        canBold: ctx.editor.can().chain().toggleBold().run() ?? false,
-        isItalic: ctx.editor.isActive("italic") ?? false,
-        canItalic: ctx.editor.can().chain().toggleItalic().run() ?? false,
-        isParagraph: ctx.editor.isActive("paragraph") ?? false,
-        isUnderline: ctx.editor.isActive("underline") ?? false,
-        canUnderline: ctx.editor.can().chain().toggleUnderline().run() ?? false,
-        isBulletList: ctx.editor.isActive("bulletList") ?? false,
-        isOrderedList: ctx.editor.isActive("orderedList") ?? false,
-        canUndo: ctx.editor.can().chain().undo().run() ?? false,
-        canRedo: ctx.editor.can().chain().redo().run() ?? false,
+        isBold: ctx.editor?.isActive("bold") ?? false,
+        canBold: ctx.editor?.can().chain().toggleBold().run() ?? false,
+        isItalic: ctx.editor?.isActive("italic") ?? false,
+        canItalic: ctx.editor?.can().chain().toggleItalic().run() ?? false,
+        isParagraph: ctx.editor?.isActive("paragraph") ?? false,
+        isUnderline: ctx.editor?.isActive("underline") ?? false,
+        canUnderline:
+          ctx.editor?.can().chain().toggleUnderline().run() ?? false,
+        isBulletList: ctx.editor?.isActive("bulletList") ?? false,
+        isOrderedList: ctx.editor?.isActive("orderedList") ?? false,
+        canUndo: ctx.editor?.can().chain().undo().run() ?? false,
+        canRedo: ctx.editor?.can().chain().redo().run() ?? false,
       };
     },
   });
+
+  if (!editor) {
+    return <>loading...</>; // Prevent crash on initial render
+  }
+
   return (
     <div className="flex flex-row flex-wrap gap-1">
       <button
@@ -81,9 +84,9 @@ function MenuBar({ editor }: { editor: Editor | null }) {
           e.preventDefault();
           editor.chain().focus().toggleBold().run();
         }}
-        disabled={!editorState.canBold}
+        disabled={!editorState?.canBold}
         className={`${
-          editorState.isBold ? "bg-gray-600" : "bg-gray-400"
+          editorState?.isBold ? "bg-gray-600" : "bg-gray-400"
         } inline-flex justify-center rounded-md border border-transparent  py-1 px-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2`}
       >
         Bold
@@ -93,9 +96,9 @@ function MenuBar({ editor }: { editor: Editor | null }) {
           e.preventDefault();
           editor.chain().focus().toggleItalic().run();
         }}
-        disabled={!editorState.canItalic}
+        disabled={!editorState?.canItalic}
         className={`${
-          editorState.isItalic ? "bg-gray-600" : "bg-gray-400"
+          editorState?.isItalic ? "bg-gray-600" : "bg-gray-400"
         } inline-flex justify-center rounded-md border border-transparent  py-1 px-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2`}
       >
         Italic
@@ -106,7 +109,7 @@ function MenuBar({ editor }: { editor: Editor | null }) {
           editor.chain().focus().setParagraph().run();
         }}
         className={`${
-          editorState.isParagraph ? "bg-gray-600" : "bg-gray-400"
+          editorState?.isParagraph ? "bg-gray-600" : "bg-gray-400"
         } inline-flex justify-center rounded-md border border-transparent  py-1 px-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2`}
       >
         Paragraph
@@ -116,9 +119,9 @@ function MenuBar({ editor }: { editor: Editor | null }) {
           e.preventDefault();
           editor.chain().focus().toggleUnderline().run();
         }}
-        disabled={!editorState.canUnderline}
+        disabled={!editorState?.canUnderline}
         className={`${
-          editorState.isUnderline ? "bg-gray-600" : "bg-gray-400"
+          editorState?.isUnderline ? "bg-gray-600" : "bg-gray-400"
         } inline-flex justify-center rounded-md border border-transparent  py-1 px-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2`}
       >
         Underline
@@ -130,7 +133,7 @@ function MenuBar({ editor }: { editor: Editor | null }) {
           editor.chain().focus().toggleBulletList().run();
         }}
         className={`${
-          editorState.isBulletList ? "bg-gray-600" : "bg-gray-400"
+          editorState?.isBulletList ? "bg-gray-600" : "bg-gray-400"
         } inline-flex justify-center rounded-md border border-transparent  py-1 px-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2`}
       >
         Bullet list
@@ -141,7 +144,7 @@ function MenuBar({ editor }: { editor: Editor | null }) {
           editor.chain().focus().toggleOrderedList().run();
         }}
         className={`${
-          editorState.isOrderedList ? "bg-gray-600" : "bg-gray-400"
+          editorState?.isOrderedList ? "bg-gray-600" : "bg-gray-400"
         } inline-flex justify-center rounded-md border border-transparent  py-1 px-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2`}
       >
         Ordered list
@@ -151,7 +154,7 @@ function MenuBar({ editor }: { editor: Editor | null }) {
           e.preventDefault();
           editor.chain().focus().undo().run();
         }}
-        disabled={!editorState.canUndo}
+        disabled={!editorState?.canUndo}
         className="inline-flex justify-center rounded-md border border-transparent bg-gray-600  py-1 px-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
       >
         Undo
@@ -161,7 +164,7 @@ function MenuBar({ editor }: { editor: Editor | null }) {
           e.preventDefault();
           editor.chain().focus().redo().run();
         }}
-        disabled={!editorState.canRedo}
+        disabled={!editorState?.canRedo}
         className="inline-flex justify-center rounded-md border border-transparent bg-gray-600  py-1 px-2 text-sm font-medium text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
       >
         Redo
