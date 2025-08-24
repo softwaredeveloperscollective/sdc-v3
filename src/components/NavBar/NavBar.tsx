@@ -203,8 +203,6 @@ export default function NavBar() {
     error: chaptersError,
   } = api.chapters.getAll.useQuery();
 
-  console.log("chapters: ", chapters); 
-
   const navigation = [
     { name: "Home", href: "/", current: false },
     {

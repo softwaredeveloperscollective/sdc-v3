@@ -7,7 +7,7 @@ import {
 
 export async function fetchGitHubContributors(): Promise<GitHubContributor[]> {
   const response = await fetch(
-    'https://api.github.com/repos/softwaredevelopersofcalgary/sdc-v3/contributors',
+    'https://api.github.com/repos/softwaredeveloperscollective/sdc-v3/contributors',
     {
       headers: {
         Authorization: `token ${process.env.GITHUB_TOKEN ?? ''}`,

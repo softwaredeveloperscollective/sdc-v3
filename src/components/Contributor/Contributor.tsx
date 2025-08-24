@@ -78,7 +78,7 @@ export default function ContributorsThanks({ className = '' }: ContributorsThank
       <div className="mt-6 text-center">
         <p className="text-sm text-gray-500">
           Want to contribute? Check out our{' '}
-          <Link href="https://github.com/softwaredevelopersofcalgary/sdc-v3" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+          <Link href="https://github.com/softwaredeveloperscollective/sdc-v3" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
             contribution guidelines
           </Link>
         </p>
