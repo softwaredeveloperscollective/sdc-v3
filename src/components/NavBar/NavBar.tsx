@@ -74,12 +74,16 @@ const HoverMenu = ({ navigation_item_with_sublinks, currentPath }) => {
   );
 };
 
-const TopNavigationBar = ({ currentPath, navigation }) => {
+const TopNavigationBar = ({ currentPath, navigation, chaptersLoading }) => {
   return (
     <>
       {navigation.map((item) => {
         if (item.subLinks) {
-          return (
+          return chaptersLoading ? (
+            <span className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-400">
+              Loading Chapters...
+            </span>
+          ) : (
             <HoverMenu
               navigation_item_with_sublinks={item}
               currentPath={currentPath}
@@ -112,12 +116,12 @@ const HamburgerNavigationBar = ({
   user,
   router,
   handleButtonClick,
+  chaptersLoading,
 }) => {
   return (
     <>
       <Disclosure.Panel className="sm:hidden">
         <div className="space-y-1 pt-2 pb-4">
-          {/* Current: "bg-gray-50 border-gray-500 text-gray-700", Default: "border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700" */}
           {navigation.map((item) => {
             if (!item.subLinks) {
               return (
@@ -136,7 +140,15 @@ const HamburgerNavigationBar = ({
                 </Disclosure.Button>
               );
             } else {
-              return (
+              return chaptersLoading ? (
+                <Disclosure.Button
+                  key={item.name}
+                  as="span"
+                  className="block border-l-4 border-transparent py-2 pl-3 pr-4 font-medium text-gray-400"
+                >
+                  Loading Chapters...
+                </Disclosure.Button>
+              ) : (
                 <>
                   <Disclosure.Button
                     key={item.name}
@@ -158,7 +170,7 @@ const HamburgerNavigationBar = ({
                           currentRouteIsActive(currentPath, subItem.href)
                             ? "border-gray-500 bg-gray-50 text-gray-700"
                             : "border-transparent text-gray-500 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700",
-                          "block border-l-4 py-2 pl-8 pr-4 text-base font-medium" // pl-8 for indentation
+                          "block border-l-4 py-2 pl-8 pr-4 text-base font-medium"
                         )}
                       >
                         {subItem.name}
@@ -259,6 +271,7 @@ export default function NavBar() {
                     <TopNavigationBar
                       currentPath={pathname}
                       navigation={navigation}
+                      chaptersLoading={chaptersLoading}
                     />
                   </div>
                 </div>
@@ -306,6 +319,7 @@ export default function NavBar() {
             user={user}
             router={router}
             handleButtonClick={handleButtonClick}
+            chaptersLoading={chaptersLoading}
           />
         </>
       )}
