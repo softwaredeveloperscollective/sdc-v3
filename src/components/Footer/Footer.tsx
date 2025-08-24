@@ -8,7 +8,7 @@ interface NavProps {
 const navigation = [
   {
     name: "Meetup",
-    href: "https://www.meetup.com/software-developers-of-calgary",
+    href: "https://www.meetup.com/software-developers-collective",
     icon: (props: NavProps) => (
       <svg
         fill="currentColor"
@@ -55,7 +55,7 @@ const Footer = () => {
         </div>
         <div className="mt-8 md:order-1 md:mt-0">
           <span className="text-center text-base text-gray-400">
-            &copy; {format(new Date(), "yyyy")} Software Developers of Calgary, All rights
+            &copy; {format(new Date(), "yyyy")} Software Developers Collective, All rights
             reserved.
           </span>
         </div>
