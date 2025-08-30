@@ -9,6 +9,9 @@
     "lint": "next lint",
     "start": "next start"
   },
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "prisma": {
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
   },
