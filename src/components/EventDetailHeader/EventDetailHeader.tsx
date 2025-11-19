@@ -1,9 +1,8 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import useUserSession from "@/hooks/useUserSession";
-import { format } from "date-fns";
 import { useState } from "react";
-import { signIn, signOut } from "next-auth/react";
+import { signIn } from "next-auth/react";
 import { api } from "@/utils/api";
 import { useRouter } from "next/router";
 import StyledCircleLoader from "../StyledCircleLoader/StyledCircleLoader";
@@ -11,9 +10,10 @@ import SelectProjectModal from "../SelectProjecModal/SelectProjectModal";
 import NewProjectBasedSuper from "../NewProjectBasedSuper/NewProjectBasedSuper";
 import NewProjectModal from "@/components/NewProjectModal/NewProjectModal";
 import SelectSuperProjectModal from "../SelectSuperProjectModal/SelectSuperProjectModal";
-import { MasterTech } from "@prisma/client";
-import QRCodeButton from "./QRCodeButton";
 import { SuperProject } from "@prisma/client";
+import QRCodeButton from "./QRCodeButton";
+import NewEventModal from "@/components/NewEventModal/NewEventModal";
+import { formatDateForDisplayLong } from "@/helpers/dateFormatters";
 
 interface EventDetailHeader {
   eventId?: string;
@@ -38,12 +38,19 @@ export default function EventDetailHeader({
   const [isSuper, setIsSuper] = useState<boolean>(false);
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isImport, setIsImport] = useState<boolean>(false);
+  const [isEditEventOpen, setIsEditEventOpen] = useState<boolean>(false);
   const [superProject, setSuperProject] = useState<SuperProject>({});
 
   const [loading, setLoading] = useState<boolean>(false);
   const user = useUserSession();
   const utils = api.useContext();
   const router = useRouter();
+  
+  const { data: eventData } = api.events.findUnique.useQuery(
+    { id: eventId || "" },
+    { enabled: !!eventId }
+  );
+
   const handleAttendEvent = async () => {
     setLoading(true);
     await attendEvent({
@@ -102,6 +109,20 @@ export default function EventDetailHeader({
         setIsNew={setIsNew}
         setSuperProject={setSuperProject}
       />
+      <NewEventModal 
+        isOpen={isEditEventOpen} 
+        setIsOpen={setIsEditEventOpen}
+        eventData={eventData ? {
+          id: eventData.id,
+          name: eventData.name,
+          date: eventData.date,
+          location: eventData.location,
+          description: eventData.description,
+          startTime: eventData.startTime,
+          chapterId: eventData.chapterId,
+        } : undefined}
+        mode="edit"
+      />
       <div className="flex flex-row justify-between px-4 py-5 sm:px-6">
         <div>
           <h3 className="text-lg font-medium leading-6 text-gray-700">
@@ -156,15 +177,24 @@ export default function EventDetailHeader({
                 Add Project
               </button>
               {user?.role === "ADMIN" && (
-                <button
-                  type="button"
-                  className="inline-flex items-center rounded-md border border-transparent bg-gray-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
-                  onClick={() =>
-                    void router.push(`${eventId ?? ""}/user-management`)
-                  }
-                >
-                  Manage Users
-                </button>
+                <>
+                  <button
+                    type="button"
+                    className="inline-flex items-center rounded-md border border-transparent bg-gray-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                    onClick={() => setIsEditEventOpen(true)}
+                  >
+                    Edit Event
+                  </button>
+                  <button
+                    type="button"
+                    className="inline-flex items-center rounded-md border border-transparent bg-gray-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                    onClick={() =>
+                      void router.push(`${eventId ?? ""}/user-management`)
+                    }
+                  >
+                    Manage Users
+                  </button>
+                </>
               )}
             </div>
           )}
@@ -175,8 +205,7 @@ export default function EventDetailHeader({
           <div className="sm:col-span-1">
             <dt className="text-sm font-medium text-gray-500">Date</dt>
             <dd className="mt-1 text-sm text-gray-900">
-              {/* eslint-disable-next-line @typescript-eslint/no-unsafe-call */}
-              {date ? format(new Date(date), "MMMM dd, yyyy") : null}
+              {formatDateForDisplayLong(date)}
             </dd>
           </div>
           <div className="sm:col-span-1">

@@ -4,38 +4,96 @@
 import type { createEventInput } from "@/server/api/routers/schema/event.schema";
 import { api } from "@/utils/api";
 import { Dialog, Transition } from "@headlessui/react";
-import React, { Fragment, useRef } from "react";
+import React, { Fragment, useRef, useEffect } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import { useForm } from "react-hook-form";
+import { formatDateForInput } from "@/helpers/dateFormatters";
 
 interface NewEventModalProps {
   isOpen: boolean;
   setIsOpen: Dispatch<SetStateAction<boolean>>;
+  eventData?: {
+    id: string;
+    name: string;
+    date: Date;
+    location: string;
+    description: string;
+    startTime: string;
+    chapterId: string | null;
+  };
+  mode?: "create" | "edit";
 }
 
 export default function NewEventModal({
   isOpen,
   setIsOpen,
+  eventData,
+  mode = "create",
 }: NewEventModalProps) {
-  const { handleSubmit, register } = useForm<createEventInput>();
+  const { handleSubmit, register, reset } = useForm<createEventInput>({
+    defaultValues: eventData
+      ? {
+          name: eventData.name,
+          date: formatDateForInput(eventData.date),
+          location: eventData.location,
+          description: eventData.description,
+          startTime: eventData.startTime,
+          chapterId: eventData.chapterId,
+        }
+      : undefined,
+  });
+
   const utils = api.useContext();
 
   const { data: chapters } = api.chapters.getAll.useQuery();
 
   const cancelButtonRef = useRef(null);
+
   const { mutateAsync: createEvent } = api.events.create.useMutation({
     onSuccess: async () => {
       await utils.events.getAll.invalidate();
       setIsOpen(false);
+      reset();
     },
   });
 
+  const { mutateAsync: updateEvent } = api.events.update.useMutation({
+    onSuccess: async () => {
+      await utils.events.getAll.invalidate();
+      if (eventData?.id) {
+        await utils.events.findUnique.invalidate({ id: eventData.id });
+      }
+      setIsOpen(false);
+      reset();
+    },
+  });
+
+  useEffect(() => {
+    if (eventData && isOpen) {
+      reset({
+        name: eventData.name,
+        date: formatDateForInput(eventData.date),
+        location: eventData.location,
+        description: eventData.description,
+        startTime: eventData.startTime,
+        chapterId: eventData.chapterId,
+      });
+    }
+  }, [eventData, isOpen, reset]);
+
   const onSubmit = async (data: createEventInput) => {
-    await createEvent({
-      ...data,
-      date: new Date(data.date),
-      chapterId: data.chapterId || null,
-    });
+    if (mode === "edit" && eventData?.id) {
+      await updateEvent({
+        id: eventData.id,
+        ...data,
+        chapterId: data.chapterId || null,
+      });
+    } else {
+      await createEvent({
+        ...data,
+        chapterId: data.chapterId || null,
+      });
+    }
   };
 
   return (
@@ -103,8 +161,7 @@ export default function NewEventModal({
                             </label>
                             <select
                               id="chapterId"
-                              {...register("chapterId", {
-                              })}
+                              {...register("chapterId", {})}
                               className="mt-1 block w-full rounded-md border-gray-300 p-2 shadow-sm focus:boder-gray-500 focus:ring-gray-500 sm:text-sm"
                             >
                               <option value="">Select a chapter...</option>
@@ -193,7 +250,7 @@ export default function NewEventModal({
                           type="submit"
                           className="inline-flex justify-center rounded-md border border-transparent bg-gray-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
                         >
-                          Save
+                          {mode === "edit" ? "Update" : "Save"}
                         </button>
                       </div>
                     </div>

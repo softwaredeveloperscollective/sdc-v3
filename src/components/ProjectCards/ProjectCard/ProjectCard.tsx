@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/require-await */
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import CommentBubble, {CommentBubbleValues,} from "@/components/Comments/CommentTextArea/CommentBubble/CommentBubble";
-import CommentTextArea, {
+import CommentBubble from "@/components/Comments/CommentTextArea/CommentBubble/CommentBubble";
+import CommentTextArea from "@/components/Comments/CommentTextArea/CommentTextArea";
+import type {
   CommentTextAreaValues,
 } from "@/components/Comments/CommentTextArea/CommentTextArea";
 import PillButton from "@/components/atoms/PillButton/PillButton";
@@ -10,15 +11,14 @@ import useUserSession from "@/hooks/useUserSession";
 import { api } from "@/utils/api";
 import { HandThumbUpIcon } from "@heroicons/react/24/outline";
 import { HandThumbUpIcon as HandThumbUpIconSolid } from "@heroicons/react/24/solid";
-import { format } from "date-fns";
 import { motion } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import TechTagRow from "../../TechTagRow/TechTagRow";
-import { ProjectModel } from "../Project.model";
+import type { ProjectModel } from "../Project.model";
 import MemberTagRow from "@/components/atoms/MemberTagRow/MemberTagRow";
-import { boolean } from "zod";
 import { EditProjectModal } from "@/components/NewProjectModal/NewProjectModal";
+import { formatDateForDisplayLong } from "@/helpers/dateFormatters";
 
 interface ProjectCardProps {
   project: ProjectModel;
@@ -326,7 +326,7 @@ export default function ProjectCard({ project, isUserAttendEvent }: ProjectCardP
                 </span>
                 <div className="flex space-x-1 text-sm text-gray-500">
                   <div>
-                    {format(new Date(project.createdAt), "MMMM dd, yyyy")}
+                    {formatDateForDisplayLong(project.createdAt)}
                   </div>
                 </div>
               </div>
