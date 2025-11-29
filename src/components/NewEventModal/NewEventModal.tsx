@@ -24,7 +24,6 @@ interface NewEventModalProps {
   mode?: "create" | "edit";
 }
 
-// Form type with date as string (for HTML input)
 type EventFormInput = Omit<createEventInput, 'date'> & {
   date: string;
 };
