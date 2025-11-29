@@ -22,6 +22,24 @@ export const userRouter = createTRPCRouter({
     });
   }),
 
+  updateRole: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        role: z.enum(["USER", "MOD", "ADMIN"]),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      return await ctx.prisma.user.update({
+        where: {
+          id: input.id,
+        },
+        data: {
+          role: input.role,
+        },
+      });
+    }),
+
   getById: publicProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {

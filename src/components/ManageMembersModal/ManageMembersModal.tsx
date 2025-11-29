@@ -14,11 +14,26 @@ export default function ManageMembersModal({
   setIsOpen,
 }: ManageMembersModalProps) {
   const cancelButtonRef = useRef(null);
+  const utils = api.useContext();
 
   const { data: users, isLoading, isError } = api.users.getAll.useQuery(
     undefined,
     { enabled: isOpen }
   );
+
+  const { mutateAsync: updateUserRole, isLoading: isUpdating } = 
+    api.users.updateRole.useMutation({
+      onSuccess: async () => {
+        await utils.users.getAll.invalidate();
+      },
+    });
+
+  const handleRoleChange = async (userId: string, newRole: "USER" | "MOD" | "ADMIN") => {
+    await updateUserRole({
+      id: userId,
+      role: newRole,
+    });
+  };
 
   return (
     <Transition.Root show={isOpen} as={Fragment}>
@@ -85,9 +100,6 @@ export default function ManageMembersModal({
                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                               Title
                             </th>
-                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                              Actions
-                            </th>
                           </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
@@ -118,28 +130,27 @@ export default function ManageMembersModal({
                                 </div>
                               </td>
                               <td className="px-4 py-3 whitespace-nowrap">
-                                <span
-                                  className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
+                                <select
+                                  value={user.role}
+                                  onChange={(e) => {
+                                    void handleRoleChange(user.id, e.target.value as "USER" | "MOD" | "ADMIN");
+                                  }}
+                                  disabled={isUpdating}
+                                  className={`rounded-full px-3 py-1 text-xs font-semibold border-0 focus:ring-2 focus:ring-gray-500 ${
                                     user.role === "ADMIN"
                                       ? "bg-purple-100 text-purple-800"
                                       : user.role === "MOD"
                                       ? "bg-blue-100 text-blue-800"
                                       : "bg-gray-100 text-gray-800"
-                                  }`}
+                                  } ${isUpdating ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
                                 >
-                                  {user.role}
-                                </span>
+                                  <option value="USER">USER</option>
+                                  <option value="MOD">MOD</option>
+                                  <option value="ADMIN">ADMIN</option>
+                                </select>
                               </td>
                               <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
                                 {user.title || "—"}
-                              </td>
-                              <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
-                                {/* Action buttons will go here */}
-                                <div className="flex justify-end gap-2">
-                                  <button className="text-gray-400 hover:text-gray-600">
-                                    •••
-                                  </button>
-                                </div>
                               </td>
                             </tr>
                           ))}
