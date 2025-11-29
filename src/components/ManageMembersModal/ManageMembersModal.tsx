@@ -1,5 +1,8 @@
 import { Dialog, Transition } from "@headlessui/react";
 import { Fragment, useRef } from "react";
+import { api } from "@/utils/api";
+import StyledCircleLoader from "@/components/StyledCircleLoader/StyledCircleLoader";
+import Image from "next/image";
 
 interface ManageMembersModalProps {
   isOpen: boolean;
@@ -11,6 +14,11 @@ export default function ManageMembersModal({
   setIsOpen,
 }: ManageMembersModalProps) {
   const cancelButtonRef = useRef(null);
+
+  const { data: users, isLoading, isError } = api.users.getAll.useQuery(
+    undefined,
+    { enabled: isOpen }
+  );
 
   return (
     <Transition.Root show={isOpen} as={Fragment}>
@@ -43,7 +51,7 @@ export default function ManageMembersModal({
               leaveFrom="opacity-100 translate-y-0 sm:scale-100"
               leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
-              <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white px-4 pt-5 pb-4 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
+              <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white px-4 pt-5 pb-4 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl sm:p-6">
                 <div>
                   <div className="text-center">
                     <Dialog.Title
@@ -52,11 +60,101 @@ export default function ManageMembersModal({
                     >
                       Manage Members
                     </Dialog.Title>
-                    <div className="mt-4">
-                      <p className="text-sm text-gray-500">Coming soon...</p>
-                    </div>
+                  </div>
+
+                  <div className="mt-6 min-h-[400px] max-h-96 overflow-y-auto">
+                    {isLoading && <StyledCircleLoader isLoading={true} />}
+
+                    {isError && (
+                      <p className="text-sm text-red-500">Error loading users</p>
+                    )}
+
+                    {users && users.length > 0 && (
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              User
+                            </th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Email
+                            </th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Role
+                            </th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Title
+                            </th>
+                            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Actions
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {users.map((user) => (
+                            <tr key={user.id} className="hover:bg-gray-50">
+                              <td className="px-4 py-3 whitespace-nowrap">
+                                <div className="flex items-center">
+                                  <div className="flex-shrink-0 h-10 w-10">
+                                    <img
+                                      className="h-10 w-10 rounded-full"
+                                      src={
+                                        user.image ||
+                                        "/images/blank-avatar.png"
+                                      }
+                                      alt=""
+                                    />
+                                  </div>
+                                  <div className="ml-3">
+                                    <div className="text-sm font-medium text-gray-900">
+                                      {user.name}
+                                    </div>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap">
+                                <div className="text-sm text-gray-500">
+                                  {user.email}
+                                </div>
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap">
+                                <span
+                                  className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
+                                    user.role === "ADMIN"
+                                      ? "bg-purple-100 text-purple-800"
+                                      : user.role === "MOD"
+                                      ? "bg-blue-100 text-blue-800"
+                                      : "bg-gray-100 text-gray-800"
+                                  }`}
+                                >
+                                  {user.role}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                {user.title || "—"}
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
+                                {/* Action buttons will go here */}
+                                <div className="flex justify-end gap-2">
+                                  <button className="text-gray-400 hover:text-gray-600">
+                                    •••
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    )}
+
+                    {users && users.length === 0 && (
+                      <p className="text-sm text-gray-500 text-center">
+                        No users found
+                      </p>
+                    )}
                   </div>
                 </div>
+
                 <div className="mt-5 sm:mt-6">
                   <button
                     type="button"
