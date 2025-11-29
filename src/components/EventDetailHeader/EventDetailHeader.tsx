@@ -10,7 +10,7 @@ import SelectProjectModal from "../SelectProjecModal/SelectProjectModal";
 import NewProjectBasedSuper from "../NewProjectBasedSuper/NewProjectBasedSuper";
 import NewProjectModal from "@/components/NewProjectModal/NewProjectModal";
 import SelectSuperProjectModal from "../SelectSuperProjectModal/SelectSuperProjectModal";
-import { SuperProject } from "@prisma/client";
+import type { SuperProject } from "@prisma/client";
 import QRCodeButton from "./QRCodeButton";
 import NewEventModal from "@/components/NewEventModal/NewEventModal";
 import { formatDateForDisplayLong } from "@/helpers/dateFormatters";

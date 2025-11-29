@@ -24,13 +24,18 @@ interface NewEventModalProps {
   mode?: "create" | "edit";
 }
 
+// Form type with date as string (for HTML input)
+type EventFormInput = Omit<createEventInput, 'date'> & {
+  date: string;
+};
+
 export default function NewEventModal({
   isOpen,
   setIsOpen,
   eventData,
   mode = "create",
 }: NewEventModalProps) {
-  const { handleSubmit, register, reset } = useForm<createEventInput>({
+  const { handleSubmit, register, reset } = useForm<EventFormInput>({
     defaultValues: eventData
       ? {
           name: eventData.name,
@@ -81,16 +86,24 @@ export default function NewEventModal({
     }
   }, [eventData, isOpen, reset]);
 
-  const onSubmit = async (data: createEventInput) => {
+  const onSubmit = async (data: EventFormInput) => {
     if (mode === "edit" && eventData?.id) {
       await updateEvent({
         id: eventData.id,
-        ...data,
+        name: data.name,
+        date: data.date,
+        location: data.location,
+        description: data.description,
+        startTime: data.startTime,
         chapterId: data.chapterId || null,
       });
     } else {
       await createEvent({
-        ...data,
+        name: data.name,
+        date: data.date,
+        location: data.location,
+        description: data.description,
+        startTime: data.startTime,
         chapterId: data.chapterId || null,
       });
     }
