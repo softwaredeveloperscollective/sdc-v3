@@ -19,6 +19,7 @@ import { signIn, signOut } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { api } from "@/utils/api";
 import { type RouterOutputs } from "@/utils/api";
+import ManageMembersModal from "@/components/ManageMembersModal/ManageMembersModal";
 
 
 type Chapter = {
@@ -207,6 +208,7 @@ const HamburgerNavigationBar = ({
 
 export default function NavBar() {
   const utils = api.useContext();
+  const [isManageMembersOpen, setIsManageMembersOpen] = useState(false);
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
   const {
@@ -239,6 +241,10 @@ export default function NavBar() {
     <Disclosure as="nav" className="bg-white shadow">
       {({ open }) => (
         <>
+          <ManageMembersModal
+            isOpen={isManageMembersOpen}
+            setIsOpen={setIsManageMembersOpen}
+          />
           <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
             <div className="relative flex h-16 justify-between">
               <div className="absolute inset-y-0 left-0 flex items-center sm:hidden">
@@ -277,28 +283,41 @@ export default function NavBar() {
                 </div>
                 <div className="hidden items-center gap-4 sm:flex sm:flex-row sm:justify-center">
                   {user && (
-                    <Link
-                      href={`/user/${user.id}`}
-                      className="group block flex-shrink-0"
-                    >
-                      <div className="flex items-center">
-                        <div>
-                          <img
-                            className="inline-block h-9 w-9 rounded-full"
-                            src={user.image || "/images/blank-avatar.png"}
-                            alt=""
-                          />
+                    <>
+                      {/* Consider the following line if we want mods to have this ability, or just admins. */}
+                      {/* {(user.role === "MOD" || user.role === "ADMIN") && ( */}
+                      {(user.role === "ADMIN") && (
+                        <button
+                          type="button"
+                          className="inline-flex items-center rounded-md border border-transparent bg-gray-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                          onClick={() => setIsManageMembersOpen(true)}
+                        >
+                          Manage Members
+                        </button>
+                      )}
+                      <Link
+                        href={`/user/${user.id}`}
+                        className="group block flex-shrink-0"
+                      >
+                        <div className="flex items-center">
+                          <div>
+                            <img
+                              className="inline-block h-9 w-9 rounded-full"
+                              src={user.image || "/images/blank-avatar.png"}
+                              alt=""
+                            />
+                          </div>
+                          <div className="ml-3 flex flex-col">
+                            <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900">
+                              {user.name}
+                            </span>
+                            <span className="text-xs font-medium text-gray-500 group-hover:text-gray-900">
+                              View profile
+                            </span>
+                          </div>
                         </div>
-                        <div className="ml-3 flex flex-col">
-                          <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900">
-                            {user.name}
-                          </span>
-                          <span className="text-xs font-medium text-gray-500 group-hover:text-gray-900">
-                            View profile
-                          </span>
-                        </div>
-                      </div>
-                    </Link>
+                      </Link>
+                    </>
                   )}
 
                   <button
