@@ -361,13 +361,15 @@ export const projectRouter = createTRPCRouter({
     .input(
       z.object({
         userId: z.string(),
+        limit: z.number().min(1).max(100).default(5),
+        cursor: z.string().optional(),
       })
     )
     .query(async ({ ctx, input }) => {
       const now = new Date();
       now.setHours(now.getHours() - 24);
 
-      return ctx.prisma.project.findMany({
+      const projects = await ctx.prisma.project.findMany({
         where: {
           authorId: input.userId,
           event: {
@@ -399,6 +401,19 @@ export const projectRouter = createTRPCRouter({
         orderBy: {
           createdAt: "desc",
         },
+        take: input.limit + 1,
+        cursor: input.cursor ? { id: input.cursor } : undefined,
       });
+
+      let nextCursor: string | undefined = undefined;
+      if (projects.length > input.limit) {
+        const nextItem = projects.pop();
+        nextCursor = nextItem?.id;
+      }
+
+      return {
+        projects,
+        nextCursor,
+      };
     }),
 });

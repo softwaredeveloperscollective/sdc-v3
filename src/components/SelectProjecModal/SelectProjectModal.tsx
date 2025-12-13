@@ -1,5 +1,5 @@
 import { Dialog, Transition } from "@headlessui/react";
-import { type Dispatch, Fragment, type SetStateAction, useRef } from "react";
+import { type Dispatch, Fragment, type SetStateAction, useRef, useState } from "react";
 import { api } from "@/utils/api";
 import useUserSession from "@/hooks/useUserSession";
 import type { ImportedProject, PastProject } from "@/types/ProjectsType";
@@ -23,20 +23,52 @@ export default function SelectProjectModal({
 }: Props) {
   const cancelButtonRef = useRef(null);
   const user = useUserSession();
+  const [allProjects, setAllProjects] = useState<PastProject[]>([]);
+  const [currentCursor, setCurrentCursor] = useState<string | undefined>(undefined);
+  const [hasLoadedInitial, setHasLoadedInitial] = useState(false);
 
-  const { data: userPastProjects, isLoading } = api.projects.getUserPastProjects.useQuery(
+  const { data: initialData, isLoading: initialLoading } = api.projects.getUserPastProjects.useQuery(
     {
       userId: user?.id || "",
+      limit: 5,
     },
     {
-      enabled: !!user?.id && isOpen,
+      enabled: !!user?.id && isOpen && !hasLoadedInitial,
+      onSuccess: (data) => {
+        setAllProjects(data.projects);
+        setCurrentCursor(data.nextCursor);
+        setHasLoadedInitial(true);
+      },
     }
   );
+
+  const { refetch: fetchMore, isFetching: isLoadingMore } = api.projects.getUserPastProjects.useQuery(
+    {
+      userId: user?.id || "",
+      limit: 10,
+      cursor: currentCursor,
+    },
+    {
+      enabled: false,
+      onSuccess: (data) => {
+        setAllProjects((prev) => [...prev, ...data.projects]);
+        setCurrentCursor(data.nextCursor);
+      },
+    }
+  );
+
+  const handleLoadMore = async () => {
+    await fetchMore();
+  };
 
   const handleNewButtonClick = () => {
     setIsOpen(false);
     setIsNew(true);
     setImportedProject(null);
+    // Reset pagination state
+    setAllProjects([]);
+    setCurrentCursor(undefined);
+    setHasLoadedInitial(false);
   };
 
   const handleImportProject = (project: PastProject) => {
@@ -47,6 +79,18 @@ export default function SelectProjectModal({
     });
     setIsOpen(false);
     setIsNew(true);
+    // Reset pagination state
+    setAllProjects([]);
+    setCurrentCursor(undefined);
+    setHasLoadedInitial(false);
+  };
+
+  const handleClose = () => {
+    setIsOpen(false);
+    // Reset pagination state when closing
+    setAllProjects([]);
+    setCurrentCursor(undefined);
+    setHasLoadedInitial(false);
   };
 
   return (
@@ -55,7 +99,7 @@ export default function SelectProjectModal({
         as="div"
         className="relative z-10"
         initialFocus={cancelButtonRef}
-        onClose={setIsOpen}
+        onClose={handleClose}
       >
         <Transition.Child
           as={Fragment}
@@ -91,7 +135,7 @@ export default function SelectProjectModal({
                     </Dialog.Title>
                   </div>
 
-                  <div className="mt-6">
+                  <div className="mt-6 max-h-96 overflow-y-auto">
                     <ul className="space-y-3">
                       <li>
                         <button
@@ -103,18 +147,18 @@ export default function SelectProjectModal({
                         </button>
                       </li>
                       
-                      {isLoading && (
-                        <li className="text-center text-sm text-gray-500">
+                      {initialLoading && (
+                        <li className="text-center text-sm text-gray-500 py-4">
                           Loading your past projects...
                         </li>
                       )}
                       
-                      {userPastProjects && userPastProjects.length > 0 && (
+                      {allProjects.length > 0 && (
                         <>
                           <li className="pt-4 text-sm font-medium text-gray-500">
                             Or import from past events:
                           </li>
-                          {userPastProjects.map((project) => (
+                          {allProjects.map((project) => (
                             <li key={project.id}>
                               <button
                                 type="button"
@@ -128,7 +172,26 @@ export default function SelectProjectModal({
                               </button>
                             </li>
                           ))}
+                          
+                          {currentCursor && (
+                            <li>
+                              <button
+                                type="button"
+                                className="w-full rounded-md border border-gray-300 bg-gray-50 px-4 py-2 text-center text-sm font-medium text-gray-600 shadow-sm hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                onClick={handleLoadMore}
+                                disabled={isLoadingMore}
+                              >
+                                {isLoadingMore ? "Loading..." : "Load More"}
+                              </button>
+                            </li>
+                          )}
                         </>
+                      )}
+                      
+                      {!initialLoading && allProjects.length === 0 && (
+                        <li className="text-center text-sm text-gray-500 py-4">
+                          No past projects found
+                        </li>
                       )}
                     </ul>
                   </div>
@@ -137,7 +200,7 @@ export default function SelectProjectModal({
                     <button
                       type="button"
                       className="inline-flex w-full justify-center rounded-md border border-transparent bg-gray-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 sm:text-sm"
-                      onClick={() => setIsOpen(false)}
+                      onClick={handleClose}
                       ref={cancelButtonRef}
                     >
                       Cancel
