@@ -356,4 +356,49 @@ export const projectRouter = createTRPCRouter({
         },
       });
     }),
+
+  getUserPastProjects: protectedProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const now = new Date();
+      now.setHours(now.getHours() - 24);
+
+      return ctx.prisma.project.findMany({
+        where: {
+          authorId: input.userId,
+          event: {
+            date: {
+              lte: now,
+            },
+          },
+        },
+        include: {
+          techs: {
+            include: {
+              tech: {
+                select: {
+                  id: true,
+                  label: true,
+                  imgUrl: true,
+                },
+              },
+            },
+          },
+          event: {
+            select: {
+              id: true,
+              name: true,
+              date: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+    }),
 });

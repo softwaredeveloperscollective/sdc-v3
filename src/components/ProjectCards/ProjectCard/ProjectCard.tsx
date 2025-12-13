@@ -17,7 +17,6 @@ import { useState } from "react";
 import TechTagRow from "../../TechTagRow/TechTagRow";
 import { ProjectModel } from "../Project.model";
 import MemberTagRow from "@/components/atoms/MemberTagRow/MemberTagRow";
-import { boolean } from "zod";
 import { EditProjectModal } from "@/components/NewProjectModal/NewProjectModal";
 
 interface ProjectCardProps {

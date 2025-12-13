@@ -14,6 +14,7 @@ import SelectSuperProjectModal from "../SelectSuperProjectModal/SelectSuperProje
 import { MasterTech } from "@prisma/client";
 import QRCodeButton from "./QRCodeButton";
 import { SuperProject } from "@prisma/client";
+import type { ImportedProject } from "@/types/ProjectsType";
 
 interface EventDetailHeader {
   eventId?: string;
@@ -39,6 +40,7 @@ export default function EventDetailHeader({
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [isImport, setIsImport] = useState<boolean>(false);
   const [superProject, setSuperProject] = useState<SuperProject>({});
+  const [importedProject, setImportedProject] = useState<ImportedProject | null>(null);
 
   const [loading, setLoading] = useState<boolean>(false);
   const user = useUserSession();
@@ -88,8 +90,25 @@ export default function EventDetailHeader({
         setIsNew={setIsNew}
         setIsSuper={setIsSuper}
         setIsImport={setIsImport}
+        setImportedProject={setImportedProject}
       />
-      <NewProjectModal isOpen={isNew} setIsOpen={setIsNew} />
+      <NewProjectModal 
+        isOpen={isNew} 
+        setIsOpen={setIsNew}
+        initialData={importedProject ? {
+          title: importedProject.name,
+          description: importedProject.description,
+          techs: importedProject.techs.map((t: any) => ({
+            id: t.id,
+            masterTechId: t.tech.id,
+            tech: {
+              id: t.tech.id,
+              label: t.tech.label,
+              imgUrl: t.tech.imgUrl
+            }
+          }))
+        } : undefined}
+      />
       <NewProjectBasedSuper
         isOpen={isSuper}
         setIsOpen={setIsSuper}
