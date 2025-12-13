@@ -6,6 +6,40 @@ import {
 import { z } from "zod";
 
 export const userRouter = createTRPCRouter({
+  getAll: publicProcedure.query(async ({ ctx }) => {
+    return await ctx.prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        image: true,
+        role: true,
+        title: true,
+      },
+      orderBy: {
+        name: "asc",
+      },
+    });
+  }),
+
+  updateRole: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        role: z.enum(["USER", "MOD", "ADMIN"]),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      return await ctx.prisma.user.update({
+        where: {
+          id: input.id,
+        },
+        data: {
+          role: input.role,
+        },
+      });
+    }),
+
   getById: publicProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
