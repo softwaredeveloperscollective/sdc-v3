@@ -27,7 +27,7 @@ export default function SelectProjectModal({
   const [currentCursor, setCurrentCursor] = useState<string | undefined>(undefined);
   const [hasLoadedInitial, setHasLoadedInitial] = useState(false);
 
-  const { data: initialData, isLoading: initialLoading } = api.projects.getUserPastProjects.useQuery(
+  const { isLoading: initialLoading } = api.projects.getUserPastProjects.useQuery(
     {
       userId: user?.id || "",
       limit: 5,
@@ -57,15 +57,14 @@ export default function SelectProjectModal({
     }
   );
 
-  const handleLoadMore = async () => {
-    await fetchMore();
+  const handleLoadMore = () => {
+    void fetchMore();
   };
 
   const handleNewButtonClick = () => {
     setIsOpen(false);
     setIsNew(true);
     setImportedProject(null);
-    // Reset pagination state
     setAllProjects([]);
     setCurrentCursor(undefined);
     setHasLoadedInitial(false);
@@ -79,7 +78,6 @@ export default function SelectProjectModal({
     });
     setIsOpen(false);
     setIsNew(true);
-    // Reset pagination state
     setAllProjects([]);
     setCurrentCursor(undefined);
     setHasLoadedInitial(false);
@@ -87,7 +85,6 @@ export default function SelectProjectModal({
 
   const handleClose = () => {
     setIsOpen(false);
-    // Reset pagination state when closing
     setAllProjects([]);
     setCurrentCursor(undefined);
     setHasLoadedInitial(false);

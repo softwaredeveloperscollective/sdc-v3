@@ -66,28 +66,23 @@ export interface Project {
   export interface ImportedProject {
     name: string;
     description: string;
-    techs: {
+    techs: ImportedProjectTech[];
+  }
+
+  export interface ImportedProjectTech {
+    id: string;
+    tech: {
       id: string;
-      tech: {
-        id: string;
-        label: string;
-        imgUrl: string;
-      };
-    }[];
+      label: string;
+      imgUrl: string;
+    };
   }
 
   export interface PastProject {
     id: string;
     name: string;
     description: string;
-    techs: {
-      id: string;
-      tech: {
-        id: string;
-        label: string;
-        imgUrl: string;
-      };
-    }[];
+    techs: ImportedProjectTech[];
     event: {
       id: string;
       name: string;

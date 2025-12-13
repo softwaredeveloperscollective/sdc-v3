@@ -14,7 +14,7 @@ import SelectSuperProjectModal from "../SelectSuperProjectModal/SelectSuperProje
 import { MasterTech } from "@prisma/client";
 import QRCodeButton from "./QRCodeButton";
 import { SuperProject } from "@prisma/client";
-import type { ImportedProject } from "@/types/ProjectsType";
+import type { ImportedProject, ImportedProjectTech } from "@/types/ProjectsType";
 
 interface EventDetailHeader {
   eventId?: string;
@@ -98,7 +98,7 @@ export default function EventDetailHeader({
         initialData={importedProject ? {
           title: importedProject.name,
           description: importedProject.description,
-          techs: importedProject.techs.map((t: any) => ({
+          techs: importedProject.techs.map((t: ImportedProjectTech) => ({
             id: t.id,
             masterTechId: t.tech.id,
             tech: {
