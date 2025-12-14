@@ -16,9 +16,8 @@ import useUserSession from "@/hooks/useUserSession";
 import classNames from "@/helpers/classNames";
 import currentRouteIsActive from "@/helpers/currentRouteIsActive";
 import { signIn, signOut } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { api } from "@/utils/api";
-import { type RouterOutputs } from "@/utils/api";
 import ManageMembersModal from "@/components/ManageMembersModal/ManageMembersModal";
 
 
@@ -207,14 +206,12 @@ const HamburgerNavigationBar = ({
 };
 
 export default function NavBar() {
-  const utils = api.useContext();
   const [isManageMembersOpen, setIsManageMembersOpen] = useState(false);
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
   const {
     data: chapters = [],
     isLoading: chaptersLoading,
-    error: chaptersError,
   } = api.chapters.getAll.useQuery();
 
   const navigation = [

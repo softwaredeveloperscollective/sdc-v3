@@ -1,7 +1,7 @@
 import { Dialog, Transition } from "@headlessui/react";
 import { type Dispatch, Fragment, type SetStateAction, useRef } from "react";
 import { api } from "@/utils/api";
-import { superProject } from "@/types/superProejct";
+import type { superProject } from "@/types/superProejct";
 
 interface Props {
   isOpen: boolean;

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 /* eslint-disable @typescript-eslint/no-misused-promises */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { superProject } from "@/types/superProejct";
+import type { superProject } from "@/types/superProejct";
 import { api } from "@/utils/api";
 import { Dialog, Transition } from "@headlessui/react";
 import { Autocomplete, TextField } from "@mui/material";
@@ -22,11 +22,6 @@ interface Props {
   isOpen: boolean;
   setIsOpen: Dispatch<SetStateAction<boolean>>;
   superProject: superProject;
-}
-
-interface ProjectCreateSubmitProps {
-  title: string;
-  description: string;
 }
 
 export default function NewProjectBasedSuper({
@@ -72,10 +67,6 @@ export default function NewProjectBasedSuper({
     };
     //await createProject(newProjectObj);
     return;
-  };
-
-  const handleImportButtonClick = () => {
-    setIsOpen(false);
   };
 
   if (isLoading) return null;

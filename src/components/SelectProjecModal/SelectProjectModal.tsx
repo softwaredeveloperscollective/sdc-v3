@@ -8,8 +8,6 @@ interface Props {
   isOpen: boolean;
   setIsOpen: Dispatch<SetStateAction<boolean>>;
   setIsNew: Dispatch<SetStateAction<boolean>>;
-  setIsSuper: Dispatch<SetStateAction<boolean>>;
-  setIsImport: Dispatch<SetStateAction<boolean>>;
   setImportedProject: Dispatch<SetStateAction<ImportedProject | null>>;
 }
 
@@ -17,8 +15,6 @@ export default function SelectProjectModal({
   isOpen,
   setIsOpen,
   setIsNew,
-  setIsSuper,
-  setIsImport,
   setImportedProject,
 }: Props) {
   const cancelButtonRef = useRef(null);

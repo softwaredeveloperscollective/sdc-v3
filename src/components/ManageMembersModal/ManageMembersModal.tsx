@@ -2,7 +2,6 @@ import { Dialog, Transition } from "@headlessui/react";
 import { Fragment, useRef } from "react";
 import { api } from "@/utils/api";
 import StyledCircleLoader from "@/components/StyledCircleLoader/StyledCircleLoader";
-import Image from "next/image";
 
 interface ManageMembersModalProps {
   isOpen: boolean;

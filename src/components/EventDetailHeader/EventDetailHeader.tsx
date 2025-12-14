@@ -3,17 +3,13 @@
 import useUserSession from "@/hooks/useUserSession";
 import { format } from "date-fns";
 import { useState } from "react";
-import { signIn, signOut } from "next-auth/react";
+import { signIn } from "next-auth/react";
 import { api } from "@/utils/api";
 import { useRouter } from "next/router";
 import StyledCircleLoader from "../StyledCircleLoader/StyledCircleLoader";
 import SelectProjectModal from "../SelectProjecModal/SelectProjectModal";
-import NewProjectBasedSuper from "../NewProjectBasedSuper/NewProjectBasedSuper";
 import NewProjectModal from "@/components/NewProjectModal/NewProjectModal";
-import SelectSuperProjectModal from "../SelectSuperProjectModal/SelectSuperProjectModal";
-import { MasterTech } from "@prisma/client";
 import QRCodeButton from "./QRCodeButton";
-import { SuperProject } from "@prisma/client";
 import type { ImportedProject, ImportedProjectTech } from "@/types/ProjectsType";
 
 interface EventDetailHeader {
@@ -36,16 +32,14 @@ export default function EventDetailHeader({
   isUserAttendEvent,
 }: EventDetailHeader) {
   const [isNew, setIsNew] = useState<boolean>(false);
-  const [isSuper, setIsSuper] = useState<boolean>(false);
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [isImport, setIsImport] = useState<boolean>(false);
-  const [superProject, setSuperProject] = useState<SuperProject>({});
   const [importedProject, setImportedProject] = useState<ImportedProject | null>(null);
 
   const [loading, setLoading] = useState<boolean>(false);
   const user = useUserSession();
   const utils = api.useContext();
   const router = useRouter();
+
   const handleAttendEvent = async () => {
     setLoading(true);
     await attendEvent({
@@ -55,7 +49,7 @@ export default function EventDetailHeader({
     setLoading(false);
   };
 
-  const { mutateAsync: attendEvent, isLoading: joinEventIsLoading } =
+  const { mutateAsync: attendEvent } =
     api.events.attendEvent.useMutation({
       onSuccess: async () => {
         await utils.events.findUnique.invalidate({
@@ -64,7 +58,7 @@ export default function EventDetailHeader({
       },
     });
 
-  const { mutateAsync: leaveEvent, isLoading: leaveEventIsLoading } =
+  const { mutateAsync: leaveEvent } =
     api.events.leaveEvent.useMutation({
       onSuccess: async () => {
         await utils.events.findUnique.invalidate({
@@ -88,8 +82,6 @@ export default function EventDetailHeader({
         isOpen={isOpen}
         setIsOpen={setIsOpen}
         setIsNew={setIsNew}
-        setIsSuper={setIsSuper}
-        setIsImport={setIsImport}
         setImportedProject={setImportedProject}
       />
       <NewProjectModal 
@@ -108,18 +100,6 @@ export default function EventDetailHeader({
             }
           }))
         } : undefined}
-      />
-      <NewProjectBasedSuper
-        isOpen={isSuper}
-        setIsOpen={setIsSuper}
-        superProject={superProject}
-      />
-      <SelectSuperProjectModal
-        isOpen={isImport}
-        setIsOpen={setIsImport}
-        setIsSuper={setIsSuper}
-        setIsNew={setIsNew}
-        setSuperProject={setSuperProject}
       />
       <div className="flex flex-row justify-between px-4 py-5 sm:px-6">
         <div>

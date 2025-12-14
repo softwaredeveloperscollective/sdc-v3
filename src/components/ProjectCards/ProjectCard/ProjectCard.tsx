@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/require-await */
 /* eslint-disable @typescript-eslint/no-misused-promises */
-import CommentBubble, {CommentBubbleValues,} from "@/components/Comments/CommentTextArea/CommentBubble/CommentBubble";
-import CommentTextArea, {
-  CommentTextAreaValues,
-} from "@/components/Comments/CommentTextArea/CommentTextArea";
+import CommentBubble from "@/components/Comments/CommentTextArea/CommentBubble/CommentBubble";
+import CommentTextArea from "@/components/Comments/CommentTextArea/CommentTextArea";
+import type { CommentTextAreaValues } from "@/components/Comments/CommentTextArea/CommentTextArea";
 import PillButton from "@/components/atoms/PillButton/PillButton";
 import useUserSession from "@/hooks/useUserSession";
 import { api } from "@/utils/api";
@@ -15,7 +14,7 @@ import { motion } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import TechTagRow from "../../TechTagRow/TechTagRow";
-import { ProjectModel } from "../Project.model";
+import type { ProjectModel } from "../Project.model";
 import MemberTagRow from "@/components/atoms/MemberTagRow/MemberTagRow";
 import { EditProjectModal } from "@/components/NewProjectModal/NewProjectModal";
 

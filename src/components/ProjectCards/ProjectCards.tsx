@@ -1,4 +1,4 @@
-import { ProjectModel } from "./Project.model";
+import type { ProjectModel } from "./Project.model";
 import ProjectCard from "./ProjectCard/ProjectCard";
 
 interface ProjectCardsProps {

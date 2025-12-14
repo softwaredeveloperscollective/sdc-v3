@@ -2,7 +2,7 @@
 import { format } from "date-fns";
 import React from "react";
 import { Popover } from "antd";
-import { Tech2 } from "@/components/ProjectCards/Project.model";
+import type { Tech2 } from "@/components/ProjectCards/Project.model";
 import UserCardSimple from "@/components/User/UserCardSimple";
 import { useState } from "react";
 import { PencilSquareIcon, TrashIcon } from "@heroicons/react/24/outline";
