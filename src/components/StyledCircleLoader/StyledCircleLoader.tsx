@@ -1,4 +1,5 @@
-import React, { CSSProperties } from "react";
+import React from "react";
+import type { CSSProperties } from "react";
 import { CircleLoader } from "react-spinners";
 
 const override: CSSProperties = {
