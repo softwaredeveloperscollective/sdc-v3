@@ -10,6 +10,14 @@ import {
 import { z } from "zod";
 import { createEventSchema } from "./schema/event.schema";
 
+const parseLocalDate = (dateString: string | Date): Date => {
+  if (dateString instanceof Date) {
+    return dateString;
+  }
+  const dateISO = `${dateString}T00:00:00.000Z`;
+  return new Date(dateISO);
+};
+
 export const eventRouter = createTRPCRouter({
   getAllByChapter: publicProcedure
   .input(z.object({ chapterId: z.string() }))
@@ -162,7 +170,31 @@ export const eventRouter = createTRPCRouter({
       const event = await ctx.prisma.event.create({
         data: {
           name,
-          date: new Date(date),
+          date: parseLocalDate(date),
+          description,
+          startTime,
+          location,
+          chapterId,
+        },
+      });
+
+      return event;
+    }),
+
+  update: protectedProcedure
+    .input(
+      createEventSchema.extend({
+        id: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { id, name, date, location, description, startTime, chapterId } = input;
+
+      const event = await ctx.prisma.event.update({
+        where: { id },
+        data: {
+          name,
+          date: parseLocalDate(date),
           description,
           startTime,
           location,

@@ -1,9 +1,9 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 
-import { format } from "date-fns";
 import Link from "next/link";
 import React from "react";
+import { formatDateForDisplay } from "@/helpers/dateFormatters";
 
 interface Event {
   id?: string | number;
@@ -17,14 +17,13 @@ interface EventProps {
   event?: Event;
 }
 
-
 export default function EventCard({ event }: EventProps) {
   return (
     event?.id && (
     <Link href={`/events/${String(event.id)}`} key={String(event.id)}>
       <div className="min-w-[200px] rounded-lg border-[1.0px] border-gray-300 p-4">
         <p className="text-sm text-gray-500">
-          {format(new Date(event.date), "yyyy/MM/dd")} - {event.startTime}
+          {formatDateForDisplay(event.date)} - {event.startTime}
         </p>
         <div className="mt-2 block">
           <p className="text-xl font-semibold text-gray-900">{event.name}</p>
@@ -41,5 +40,5 @@ export default function EventCard({ event }: EventProps) {
         </div>
       </div>
     </Link>
-  ) || <div>No events found</div> );
+    ) || <div>No events found</div> );
 }
