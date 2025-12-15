@@ -1,4 +1,6 @@
 /** @type {import("eslint").Linter.Config} */
+const tseslint = require('@typescript-eslint/eslint-plugin');
+
 const config = {
   overrides: [
     {
@@ -15,7 +17,9 @@ const config = {
   parserOptions: {
     project: "./tsconfig.json",
   },
-  plugins: ["@typescript-eslint"],
+  plugins: {
+    '@typescript-eslint': tseslint
+  },
   extends: ["next/core-web-vitals", "plugin:@typescript-eslint/recommended"],
   rules: {
     "@typescript-eslint/no-unsafe-return": "off",
