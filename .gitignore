@@ -51,3 +51,6 @@ yarn.lock
 #python venv
 venv/
 src/server/scraper/scrape.py
+
+#docker compose link directory
+cockroachdb/

@@ -7,11 +7,11 @@ Thank you for considering contributing to SDC-v3! This project is open to contri
 To get started, follow these steps:
 
 1. Fork the repository and clone it to your local machine.
-2. Install the necessary dependencies using `npm install`.
-3. Create a new branch for your changes using `git checkout -b new-branch-name`.
-4. Make your changes and commit them using `git commit`.
-5. Push your changes to your fork using `git push origin new-branch-name`.
-6. Open a pull request on the main repository.
+1. Install the necessary dependencies using `npm install`.
+1. Check the `docs/local-db-setup.md` instructions to setup the CockroachDB database.
+1. Create a new branch for your changes using `git checkout -b new-branch-name`.
+1. Make your changes and commit them using `git commit` Push your changes to your fork using `git push origin new-branch-name`.
+1. Open a pull request on the main repository.
 
 ## Guidelines
 
@@ -28,11 +28,12 @@ Here are a few guidelines to follow when contributing:
 To contribute to this project, follow these steps:
 
 1. Fork this repository by clicking the "Fork" button at the top of the repository page.
-2. Clone the forked repository to your local machine using the command git clone <forked-repo-url>.
-3. Create a new branch for your changes using the command git checkout -b <new-branch-name>.
+2. Clone the forked repository to your local machine using the command `git clone <forked-repo-url>`.
+2. Setup the dev database based on instructions present on `docs/local-db-setup.md`.
+3. Create a new branch for your changes using the command `git checkout -b <new-branch-name>`.
 4. Make the necessary changes to the code, and make sure they follow the project's coding style and conventions.
-5. Commit your changes with a descriptive commit message using the command git commit -m "Descriptive commit message".
-6. Push your changes to your forked repository using the command git push origin <new-branch-name>.
+5. Commit your changes with a descriptive commit message using the `command git commit -m "Descriptive commit message"`.
+6. Push your changes to your forked repository using the command `git push origin <new-branch-name>`.
 7. Create a pull request by clicking the "New pull request" button on the forked repository page.
 8. Wait for the project maintainers to review your pull request and provide feedback.
 9. Make any necessary changes based on the feedback, and push them to your branch.
@@ -40,11 +41,15 @@ To contribute to this project, follow these steps:
 
 To link a pull request from a forked repository to the original repository's issue, you can use a special syntax in the pull request's description or comments. Here are the steps to do this:
 
-1. In the pull request's description or comments, type "Fixes #issue-number", where "issue-number" is the number of the issue in the original repository that the pull request is related to.
-2. Make sure the issue number is preceded by the "#" symbol. For example, if the issue number is "123", you would type "Fixes #123".
+1. In the pull request's description or comments, type `Fixes #<issue-number>`, where `issue-number` is the number of the issue in the original repository that the pull request is related to.
+2. Make sure the issue number is preceded by the `#` symbol. For example, if the issue number is `123`, you would type `Fixes #123`.
 3. When you submit the pull request, GitHub will automatically link the pull request to the issue in the original repository.
-4. The pull request will also appear in the "Pull requests" tab of the original repository's issue.
+4. The pull request will also appear in the `Pull requests` tab of the original repository's issue.
 5. Here's an example of what the syntax would look like in a pull request comment:
+
+```
+This PR is for this issue and fixes #123
+```
 
 ## Code of Conduct
 
