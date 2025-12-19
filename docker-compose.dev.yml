@@ -1,20 +1,19 @@
 version: "3.8"
 
 services:
-  mysql:
-    image: mysql
-    command: --default-authentication-plugin=caching_sha2_password
+  db:
+    image: cockroachdb/cockroach:latest
+    command: start-single-node --insecure
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: sdc_root_password
-      MYSQL_DATABASE: sdc
-      MYSQL_USER: sdc
-      MYSQL_PASSWORD: sdc_password
+      COCKROACH_DATABASE: sdc
+      COCKROACH_USER: sdc
+      COCKROACH_PASSWORD: sdc_password
     volumes:
-      - db:/var/lib/mysql
-      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ${PWD}/cockroachdb:/cockroach/cockroach-data
     ports:
-      - "3306:3306"
+      - "26257:26257"
+      - "8080:8080"
 
 volumes:
-  db:
+  cockroachdb:

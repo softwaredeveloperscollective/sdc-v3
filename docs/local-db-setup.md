@@ -1,4 +1,4 @@
-# Setting up MySQL Instance with Docker Compose
+# Setting up CockroachDB instance with Docker Compose
 
 ## Prerequisites
 Before getting started, ensure that you have the following prerequisites installed on your machine:
@@ -13,13 +13,13 @@ Before getting started, ensure that you have the following prerequisites install
 
 2. Navigate to the `sdc` project directory where you'll find the `docker-compose.dev.yml` file.
 
-3. Run the following command to start the MySQL container:
+3. Run the following command to start the CockroachDB container:
 
     ```shell
     docker compose -f docker-compose.dev.yml -up -d
     ```
 
-4. Wait for Docker to download the MySQL image and start the container. You can check the container status by running the command:
+4. Wait for Docker to download the CockraochDB image and start the container. You can check the container status by running the command:
 
     ```shell
     docker compose -f docker-compose.dev.yml ps
@@ -28,19 +28,19 @@ Before getting started, ensure that you have the following prerequisites install
     You should see an output similar to the following:
 
     ```shell
-    NAME                COMMAND                  SERVICE             STATUS              PORTS
-    sdc-v3-mysql-1      "docker-entrypoint.s…"   mysql               running             0.0.0.0:3306->3306/tcp
+    NAME                COMMAND                        SERVICE             STATUS              PORTS
+    sdc-v3      "docker-entrypoint.s…"   cockroachdb/cockroach         running             0.0.0.0:8080->8080/tcp,0.0.0.0:26257->26257/tcp
     ```
 
-5. Once the container is up and running, you can connect to the MySQL instance using a MySQL client tool of your choice. Here's an example using the `mysql` command-line client:
+5. Once the container is up and running, you can connect to the CockroachDB instance using a client tool of your choice. Here's an example using the `sql` command-line client within the comtainer:
 
     ```shell
-    mysql -h localhost -P 3306 -u sdc -p
+    ./cockroach sql --insecure
     ```
 
 You will be prompted to enter the password. Enter `sdc_password`.
 
-6. Congratulations! You are now connected to the MySQL instance and ready to work with the `sdc` database.
+6. Congratulations! You are now connected to the CockroachDB instance and ready to work with the `sdc` database.
 
 ### Windows
 
@@ -48,13 +48,13 @@ You will be prompted to enter the password. Enter `sdc_password`.
 
 2. Navigate to the `sdc` project directory where you'll find the `docker-compose.dev.yml` file.
 
-3. Run the following command to start the MySQL container:
+3. Run the following command to start the CockroachDB container:
 
     ```shell
     docker compose -f docker-compose.dev.yml -up -d
     ```
 
-4. Wait for Docker to download the MySQL image and start the container. You can check the container status by running the command:
+4. Wait for Docker to download the CockroachDB image and start the container. You can check the container status by running the command:
 
     ```shell
     docker compose -f docker-compose.dev.yml ps
@@ -67,15 +67,19 @@ See macOS instructions above.
 
 ## Connecting sdc website to the DB
 
-Update the values of `DATABASE_URL` and `SHADOW_DATABASE_URL` in your `.env` file to the following:
+Update the values of `DATABASE_URL` in your `.env` file to the following:
 
 ```
-DATABASE_URL='mysql://sdc:sdc_password@localhost:3306/sdc'
-SHADOW_DATABASE_URL='mysql://sdc:sdc_password@localhost:3306/sdc_migrations'
+DATABASE_URL='postgresql://root@localhost:26257/sdc?application_name=%24+cockroach+sql&connect_timeout=15&sslmode=disable'
+
 ```
 
-Then run prisma migrations to apply schema changes to the newly created DB
+Then run prisma client generation, run migrations and seed the db to apply schema changes to the newly created DB to begin development
 
 ```shell
+npx prisma generate 
+
 npx prisma migrate dev
+
+npx prisma db seed
 ```
