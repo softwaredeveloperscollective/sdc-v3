@@ -1,5 +1,5 @@
-import { InputHTMLAttributes } from "react";
-import { UseFormRegisterReturn } from "react-hook-form";
+import type { InputHTMLAttributes } from "react";
+import type { UseFormRegisterReturn } from "react-hook-form";
 
 interface GenericInputProps extends InputHTMLAttributes<HTMLInputElement> {
   register: UseFormRegisterReturn;

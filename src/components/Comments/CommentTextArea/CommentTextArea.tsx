@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 /* eslint-disable @next/next/no-img-element */
 import useUserSession from "@/hooks/useUserSession";
-import {
+import type {
   FieldValues,
   UseFormHandleSubmit,
   UseFormRegister,

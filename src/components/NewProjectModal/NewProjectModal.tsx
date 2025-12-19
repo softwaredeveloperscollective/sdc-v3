@@ -12,6 +12,7 @@ import {
   type Dispatch,
   Fragment,
   type SetStateAction,
+  useEffect,
   useRef,
   useState,
 } from "react";
@@ -66,7 +67,7 @@ export default function NewProjectModal({
   setIsOpen,
   initialData,
   onSubmit: customSubmit,
-    mode = 'create' 
+  mode = 'create' 
 }: Props) {
   const router = useRouter();
   const utils = api.useContext();
@@ -75,25 +76,47 @@ export default function NewProjectModal({
   const cancelButtonRef = useRef(null);
   const { data, isLoading, isError } = api.techs.getAll.useQuery();
 
-  const [selectedTechs, setSelectedTechs] = useState<MasterTech[]>(
-    initialData?.techs?.map((tech: Tech) => ({
-      id: tech.masterTechId,
-      label: tech.tech.label,
-      slug: tech.tech.label.toLowerCase(),
-      imgUrl: tech.tech.imgUrl
-    })) || []
-  );
+  const [selectedTechs, setSelectedTechs] = useState<MasterTech[]>([]);
 
   const { handleSubmit, register, reset, watch } = useForm({
     defaultValues: {
-      title: initialData?.title || '',
-      description: initialData?.description || ''
+      title: '',
+      description: ''
     }
   });
+
+  useEffect(() => {
+    if (initialData) {
+      reset({
+        title: initialData.title || '',
+        description: initialData.description || ''
+      });
+      
+      setSelectedTechs(
+        initialData.techs?.map((tech: Tech) => ({
+          id: tech.masterTechId,
+          label: tech.tech.label,
+          slug: tech.tech.label.toLowerCase(),
+          imgUrl: tech.tech.imgUrl
+        })) || []
+      );
+    } else {
+      reset({
+        title: '',
+        description: ''
+      });
+      setSelectedTechs([]);
+    }
+  }, [initialData, reset]);
 
   const { mutateAsync: createProject } = api.projects.create.useMutation({
     onSuccess: (data) => {
       setIsOpen(false);
+      setSelectedTechs([]);
+      reset({
+        title: '',
+        description: ''
+      });
       return utils.events.findUnique.invalidate({
         id: data?.eventId,
       });

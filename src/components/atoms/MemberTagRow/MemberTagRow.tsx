@@ -1,4 +1,4 @@
-import { Member } from "@/components/ProjectCards/Project.model";
+import type { Member } from "@/components/ProjectCards/Project.model";
 import React from "react";
 import MemberTag from "./MemberTag";
 interface MemberTagRowProps {

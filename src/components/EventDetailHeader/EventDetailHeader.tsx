@@ -7,11 +7,9 @@ import { api } from "@/utils/api";
 import { useRouter } from "next/router";
 import StyledCircleLoader from "../StyledCircleLoader/StyledCircleLoader";
 import SelectProjectModal from "../SelectProjecModal/SelectProjectModal";
-import NewProjectBasedSuper from "../NewProjectBasedSuper/NewProjectBasedSuper";
 import NewProjectModal from "@/components/NewProjectModal/NewProjectModal";
-import SelectSuperProjectModal from "../SelectSuperProjectModal/SelectSuperProjectModal";
-import type { SuperProject } from "@prisma/client";
 import QRCodeButton from "./QRCodeButton";
+import type { ImportedProject, ImportedProjectTech } from "@/types/ProjectsType";
 import NewEventModal from "@/components/NewEventModal/NewEventModal";
 import { formatDateForDisplayLong } from "@/helpers/dateFormatters";
 
@@ -35,11 +33,9 @@ export default function EventDetailHeader({
   isUserAttendEvent,
 }: EventDetailHeader) {
   const [isNew, setIsNew] = useState<boolean>(false);
-  const [isSuper, setIsSuper] = useState<boolean>(false);
   const [isOpen, setIsOpen] = useState<boolean>(false);
-  const [isImport, setIsImport] = useState<boolean>(false);
+  const [importedProject, setImportedProject] = useState<ImportedProject | null>(null);
   const [isEditEventOpen, setIsEditEventOpen] = useState<boolean>(false);
-  const [superProject, setSuperProject] = useState<SuperProject>({});
 
   const [loading, setLoading] = useState<boolean>(false);
   const user = useUserSession();
@@ -60,7 +56,7 @@ export default function EventDetailHeader({
     setLoading(false);
   };
 
-  const { mutateAsync: attendEvent, isLoading: joinEventIsLoading } =
+  const { mutateAsync: attendEvent } =
     api.events.attendEvent.useMutation({
       onSuccess: async () => {
         await utils.events.findUnique.invalidate({
@@ -69,7 +65,7 @@ export default function EventDetailHeader({
       },
     });
 
-  const { mutateAsync: leaveEvent, isLoading: leaveEventIsLoading } =
+  const { mutateAsync: leaveEvent } =
     api.events.leaveEvent.useMutation({
       onSuccess: async () => {
         await utils.events.findUnique.invalidate({
@@ -93,21 +89,24 @@ export default function EventDetailHeader({
         isOpen={isOpen}
         setIsOpen={setIsOpen}
         setIsNew={setIsNew}
-        setIsSuper={setIsSuper}
-        setIsImport={setIsImport}
+        setImportedProject={setImportedProject}
       />
-      <NewProjectModal isOpen={isNew} setIsOpen={setIsNew} />
-      <NewProjectBasedSuper
-        isOpen={isSuper}
-        setIsOpen={setIsSuper}
-        superProject={superProject}
-      />
-      <SelectSuperProjectModal
-        isOpen={isImport}
-        setIsOpen={setIsImport}
-        setIsSuper={setIsSuper}
-        setIsNew={setIsNew}
-        setSuperProject={setSuperProject}
+      <NewProjectModal 
+        isOpen={isNew} 
+        setIsOpen={setIsNew}
+        initialData={importedProject ? {
+          title: importedProject.name,
+          description: importedProject.description,
+          techs: importedProject.techs.map((t: ImportedProjectTech) => ({
+            id: t.id,
+            masterTechId: t.tech.id,
+            tech: {
+              id: t.tech.id,
+              label: t.tech.label,
+              imgUrl: t.tech.imgUrl
+            }
+          }))
+        } : undefined}
       />
       <NewEventModal 
         isOpen={isEditEventOpen} 

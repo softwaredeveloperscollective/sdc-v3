@@ -62,4 +62,30 @@ export interface Project {
     title: string;
     techs: Tech2[];
   }
-  
+
+  export interface ImportedProject {
+    name: string;
+    description: string;
+    techs: ImportedProjectTech[];
+  }
+
+  export interface ImportedProjectTech {
+    id: string;
+    tech: {
+      id: string;
+      label: string;
+      imgUrl: string;
+    };
+  }
+
+  export interface PastProject {
+    id: string;
+    name: string;
+    description: string;
+    techs: ImportedProjectTech[];
+    event: {
+      id: string;
+      name: string;
+      date: Date;
+    };
+  }

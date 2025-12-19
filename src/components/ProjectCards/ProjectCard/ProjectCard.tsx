@@ -3,9 +3,7 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 import CommentBubble from "@/components/Comments/CommentTextArea/CommentBubble/CommentBubble";
 import CommentTextArea from "@/components/Comments/CommentTextArea/CommentTextArea";
-import type {
-  CommentTextAreaValues,
-} from "@/components/Comments/CommentTextArea/CommentTextArea";
+import type { CommentTextAreaValues } from "@/components/Comments/CommentTextArea/CommentTextArea";
 import PillButton from "@/components/atoms/PillButton/PillButton";
 import useUserSession from "@/hooks/useUserSession";
 import { api } from "@/utils/api";

@@ -356,4 +356,64 @@ export const projectRouter = createTRPCRouter({
         },
       });
     }),
+
+  getUserPastProjects: protectedProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        limit: z.number().min(1).max(100).default(5),
+        cursor: z.string().optional(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const now = new Date();
+      now.setHours(now.getHours() - 24);
+
+      const projects = await ctx.prisma.project.findMany({
+        where: {
+          authorId: input.userId,
+          event: {
+            date: {
+              lte: now,
+            },
+          },
+        },
+        include: {
+          techs: {
+            include: {
+              tech: {
+                select: {
+                  id: true,
+                  label: true,
+                  imgUrl: true,
+                },
+              },
+            },
+          },
+          event: {
+            select: {
+              id: true,
+              name: true,
+              date: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        take: input.limit + 1,
+        cursor: input.cursor ? { id: input.cursor } : undefined,
+      });
+
+      let nextCursor: string | undefined = undefined;
+      if (projects.length > input.limit) {
+        const nextItem = projects.pop();
+        nextCursor = nextItem?.id;
+      }
+
+      return {
+        projects,
+        nextCursor,
+      };
+    }),
 });
