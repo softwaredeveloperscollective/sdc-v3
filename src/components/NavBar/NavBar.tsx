@@ -19,6 +19,7 @@ import { signIn, signOut } from "next-auth/react";
 import { useState } from "react";
 import { api } from "@/utils/api";
 import ManageMembersModal from "@/components/ManageMembersModal/ManageMembersModal";
+import ManageChaptersModal from "@/components/ManageChaptersModal/ManageChaptersModal";
 import NewEventModal from "@/components/NewEventModal/NewEventModal";
 import { IsUserEditor } from "@/hooks/IsUserEditor";
 
@@ -205,6 +206,7 @@ const HamburgerNavigationBar = ({
 
 export default function NavBar() {
   const [isManageMembersOpen, setIsManageMembersOpen] = useState(false);
+  const [isManageChaptersOpen, setIsManageChaptersOpen] = useState(false);
   const [isNewEventOpen, setIsNewEventOpen] = useState(false);
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
@@ -240,6 +242,11 @@ export default function NavBar() {
           current: false,
         },
         {
+          name: "Manage Chapters",
+          onClick: () => setIsManageChaptersOpen(true),
+          current: false,
+        },
+        {
           name: "Create Events",
           onClick: () => setIsNewEventOpen(true),
           current: false,
@@ -247,12 +254,14 @@ export default function NavBar() {
       ],
     }] : []),
   ];
+  
   const router = useRouter();
   const pathname = router.pathname;
 
   const handleButtonClick = () => {
     return user ? signOut() : signIn();
   };
+  
   return (
     <Disclosure as="nav" className="bg-white shadow">
       {({ open }) => (
@@ -260,6 +269,10 @@ export default function NavBar() {
           <ManageMembersModal
             isOpen={isManageMembersOpen}
             setIsOpen={setIsManageMembersOpen}
+          />
+          <ManageChaptersModal
+            isOpen={isManageChaptersOpen}
+            setIsOpen={setIsManageChaptersOpen}
           />
           <NewEventModal
             isOpen={isNewEventOpen}
