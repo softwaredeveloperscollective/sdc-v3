@@ -1,11 +1,21 @@
 import { Dialog, Transition } from "@headlessui/react";
-import { Fragment, useRef } from "react";
+import { Fragment, useRef, useState } from "react";
 import { api } from "@/utils/api";
 import StyledCircleLoader from "@/components/StyledCircleLoader/StyledCircleLoader";
+import { useForm } from "react-hook-form";
 
 interface ManageChaptersModalProps {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
+}
+
+interface ChapterFormData {
+  name: string;
+  slug?: string;
+  location?: string;
+  meetupUrl?: string;
+  discordUrl?: string;
+  isActive: boolean;
 }
 
 export default function ManageChaptersModal({
@@ -13,11 +23,53 @@ export default function ManageChaptersModal({
   setIsOpen,
 }: ManageChaptersModalProps) {
   const cancelButtonRef = useRef(null);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  
+  const utils = api.useContext();
 
   const { data: chapters, isLoading, isError } = api.chapters.getAllWithInactive.useQuery(
     undefined,
     { enabled: isOpen }
   );
+
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<ChapterFormData>({
+    defaultValues: {
+      name: "",
+      slug: "",
+      location: "",
+      meetupUrl: "",
+      discordUrl: "",
+      isActive: true,
+    },
+  });
+
+  const { mutateAsync: createChapter, isLoading: isCreating } = api.chapters.create.useMutation({
+    onSuccess: async () => {
+      await utils.chapters.getAllWithInactive.invalidate();
+      await utils.chapters.getAll.invalidate();
+      setShowCreateForm(false);
+      reset();
+    },
+    onError: (error) => {
+      alert(`Error creating chapter: ${error.message}`);
+    },
+  });
+
+  const onSubmit = async (data: ChapterFormData) => {
+    await createChapter({
+      name: data.name,
+      slug: data.slug || undefined,
+      location: data.location || undefined,
+      meetupUrl: data.meetupUrl || undefined,
+      discordUrl: data.discordUrl || undefined,
+      isActive: data.isActive,
+    });
+  };
+
+  const handleCancel = () => {
+    setShowCreateForm(false);
+    reset();
+  };
 
   return (
     <Transition.Root show={isOpen} as={Fragment}>
@@ -64,6 +116,129 @@ export default function ManageChaptersModal({
                     </p>
                   </div>
 
+                  {/* Create New Chapter Button */}
+                  {!showCreateForm && (
+                    <div className="mt-4 flex justify-end">
+                      <button
+                        type="button"
+                        onClick={() => setShowCreateForm(true)}
+                        className="inline-flex items-center rounded-md border border-transparent bg-gray-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                      >
+                        + New Chapter
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Create Chapter Form */}
+                  {showCreateForm && (
+                    <div className="mt-4 border-t border-gray-200 pt-4">
+                      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                          <div>
+                            <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                              Chapter Name *
+                            </label>
+                            <input
+                              type="text"
+                              id="name"
+                              {...register("name", { required: "Chapter name is required" })}
+                              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 sm:text-sm p-2 border"
+                            />
+                            {errors.name && (
+                              <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
+                            )}
+                          </div>
+
+                          <div>
+                            <label htmlFor="slug" className="block text-sm font-medium text-gray-700">
+                              Slug (optional)
+                            </label>
+                            <input
+                              type="text"
+                              id="slug"
+                              {...register("slug")}
+                              placeholder="e.g., calgary"
+                              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 sm:text-sm p-2 border"
+                            />
+                            <p className="mt-1 text-xs text-gray-500">
+                              Auto-generated from name if left empty
+                            </p>
+                          </div>
+
+                          <div>
+                            <label htmlFor="location" className="block text-sm font-medium text-gray-700">
+                              Location
+                            </label>
+                            <input
+                              type="text"
+                              id="location"
+                              {...register("location")}
+                              placeholder="e.g., Calgary, AB"
+                              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 sm:text-sm p-2 border"
+                            />
+                          </div>
+
+                          <div>
+                            <label htmlFor="meetupUrl" className="block text-sm font-medium text-gray-700">
+                              Meetup URL
+                            </label>
+                            <input
+                              type="url"
+                              id="meetupUrl"
+                              {...register("meetupUrl")}
+                              placeholder="https://meetup.com/..."
+                              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 sm:text-sm p-2 border"
+                            />
+                          </div>
+
+                          <div>
+                            <label htmlFor="discordUrl" className="block text-sm font-medium text-gray-700">
+                              Discord URL
+                            </label>
+                            <input
+                              type="url"
+                              id="discordUrl"
+                              {...register("discordUrl")}
+                              placeholder="https://discord.gg/..."
+                              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 sm:text-sm p-2 border"
+                            />
+                          </div>
+
+                          <div className="flex items-center">
+                            <input
+                              type="checkbox"
+                              id="isActive"
+                              {...register("isActive")}
+                              className="h-4 w-4 rounded border-gray-300 text-gray-600 focus:ring-gray-500"
+                            />
+                            <label htmlFor="isActive" className="ml-2 block text-sm text-gray-700">
+                              Active Chapter
+                            </label>
+                          </div>
+                        </div>
+
+                        <div className="flex justify-end space-x-3 pt-2">
+                          <button
+                            type="button"
+                            onClick={handleCancel}
+                            disabled={isCreating}
+                            className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="submit"
+                            disabled={isCreating}
+                            className="inline-flex justify-center rounded-md border border-transparent bg-gray-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {isCreating ? "Creating..." : "Create Chapter"}
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  )}
+
+                  {/* Chapters List */}
                   <div className="mt-6 min-h-[400px] max-h-96 overflow-y-auto">
                     {isLoading && <StyledCircleLoader isLoading={true} />}
 
@@ -163,7 +338,7 @@ export default function ManageChaptersModal({
 
                     {chapters && chapters.length === 0 && (
                       <p className="text-sm text-gray-500 text-center py-8">
-                        No chapters found
+                        No chapters found. Create your first chapter above!
                       </p>
                     )}
                   </div>
