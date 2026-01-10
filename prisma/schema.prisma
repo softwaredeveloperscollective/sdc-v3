@@ -81,9 +81,17 @@ model VerificationToken {
 }
 
 model Chapter {
-  id     String  @id @default(cuid())
-  name   String
-  events Event[]
+  id          String   @id @default(cuid())
+  name        String
+  slug        String?  @unique
+  location    String?
+  meetupUrl   String?
+  discordUrl  String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+  
+  events      Event[]
 }
 
 model Event {
