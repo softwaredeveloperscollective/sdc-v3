@@ -3,6 +3,7 @@ import { Fragment, useRef, useState } from "react";
 import { api } from "@/utils/api";
 import StyledCircleLoader from "@/components/StyledCircleLoader/StyledCircleLoader";
 import { useForm } from "react-hook-form";
+import { PencilSquareIcon, TrashIcon } from "@heroicons/react/24/outline";
 
 interface ManageChaptersModalProps {
   isOpen: boolean;
@@ -24,6 +25,7 @@ export default function ManageChaptersModal({
 }: ManageChaptersModalProps) {
   const cancelButtonRef = useRef(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [editingChapterId, setEditingChapterId] = useState<string | null>(null);
   
   const utils = api.useContext();
 
@@ -48,6 +50,7 @@ export default function ManageChaptersModal({
       await utils.chapters.getAllWithInactive.invalidate();
       await utils.chapters.getAll.invalidate();
       setShowCreateForm(false);
+      setEditingChapterId(null);
       reset();
     },
     onError: (error) => {
@@ -55,21 +58,81 @@ export default function ManageChaptersModal({
     },
   });
 
+  const { mutateAsync: updateChapter, isLoading: isUpdating } = api.chapters.update.useMutation({
+    onSuccess: async () => {
+      await utils.chapters.getAllWithInactive.invalidate();
+      await utils.chapters.getAll.invalidate();
+      setShowCreateForm(false);
+      setEditingChapterId(null);
+      reset();
+    },
+    onError: (error) => {
+      alert(`Error updating chapter: ${error.message}`);
+    },
+  });
+
+  const { mutateAsync: deleteChapter, isLoading: isDeleting } = api.chapters.delete.useMutation({
+    onSuccess: async () => {
+      await utils.chapters.getAllWithInactive.invalidate();
+      await utils.chapters.getAll.invalidate();
+    },
+    onError: (error) => {
+      alert(`Error deleting chapter: ${error.message}`);
+    },
+  });
+
   const onSubmit = async (data: ChapterFormData) => {
-    await createChapter({
-      name: data.name,
-      slug: data.slug || undefined,
-      location: data.location || undefined,
-      meetupUrl: data.meetupUrl || undefined,
-      discordUrl: data.discordUrl || undefined,
-      isActive: data.isActive,
+    if (editingChapterId) {
+      await updateChapter({
+        id: editingChapterId,
+        name: data.name,
+        slug: data.slug || undefined,
+        location: data.location || undefined,
+        meetupUrl: data.meetupUrl || undefined,
+        discordUrl: data.discordUrl || undefined,
+        isActive: data.isActive,
+      });
+    } else {
+      await createChapter({
+        name: data.name,
+        slug: data.slug || undefined,
+        location: data.location || undefined,
+        meetupUrl: data.meetupUrl || undefined,
+        discordUrl: data.discordUrl || undefined,
+        isActive: data.isActive,
+      });
+    }
+  };
+
+  const handleEdit = (chapter: typeof chapters[number]) => {
+    setEditingChapterId(chapter.id);
+    setShowCreateForm(true);
+    reset({
+      name: chapter.name,
+      slug: chapter.slug || "",
+      location: chapter.location || "",
+      meetupUrl: chapter.meetupUrl || "",
+      discordUrl: chapter.discordUrl || "",
+      isActive: chapter.isActive,
     });
+  };
+
+  const handleDelete = async (chapterId: string, chapterName: string) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to deactivate "${chapterName}"? This will make it invisible to regular users.`
+    );
+    if (confirmed) {
+      await deleteChapter({ id: chapterId });
+    }
   };
 
   const handleCancel = () => {
     setShowCreateForm(false);
+    setEditingChapterId(null);
     reset();
   };
+
+  const isProcessing = isCreating || isUpdating || isDeleting;
 
   return (
     <Transition.Root show={isOpen} as={Fragment}>
@@ -121,7 +184,18 @@ export default function ManageChaptersModal({
                     <div className="mt-4 flex justify-end">
                       <button
                         type="button"
-                        onClick={() => setShowCreateForm(true)}
+                        onClick={() => {
+                          setEditingChapterId(null);
+                          setShowCreateForm(true);
+                          reset({
+                            name: "",
+                            slug: "",
+                            location: "",
+                            meetupUrl: "",
+                            discordUrl: "",
+                            isActive: true,
+                          });
+                        }}
                         className="inline-flex items-center rounded-md border border-transparent bg-gray-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
                       >
                         + New Chapter
@@ -129,9 +203,11 @@ export default function ManageChaptersModal({
                     </div>
                   )}
 
-                  {/* Create Chapter Form */}
                   {showCreateForm && (
                     <div className="mt-4 border-t border-gray-200 pt-4">
+                      <h4 className="text-sm font-medium text-gray-900 mb-4">
+                        {editingChapterId ? "Edit Chapter" : "Create New Chapter"}
+                      </h4>
                       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                           <div>
@@ -221,17 +297,20 @@ export default function ManageChaptersModal({
                           <button
                             type="button"
                             onClick={handleCancel}
-                            disabled={isCreating}
+                            disabled={isProcessing}
                             className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50"
                           >
                             Cancel
                           </button>
                           <button
                             type="submit"
-                            disabled={isCreating}
+                            disabled={isProcessing}
                             className="inline-flex justify-center rounded-md border border-transparent bg-gray-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            {isCreating ? "Creating..." : "Create Chapter"}
+                            {isProcessing 
+                              ? (editingChapterId ? "Updating..." : "Creating...") 
+                              : (editingChapterId ? "Update Chapter" : "Create Chapter")
+                            }
                           </button>
                         </div>
                       </form>
@@ -266,6 +345,9 @@ export default function ManageChaptersModal({
                             </th>
                             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                               Links
+                            </th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                              Actions
                             </th>
                           </tr>
                         </thead>
@@ -328,6 +410,28 @@ export default function ManageChaptersModal({
                                   {!chapter.meetupUrl && !chapter.discordUrl && (
                                     <span className="text-gray-400">—</span>
                                   )}
+                                </div>
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap text-sm">
+                                <div className="flex space-x-3">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleEdit(chapter)}
+                                    disabled={isProcessing}
+                                    className="text-gray-600 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    title="Edit chapter"
+                                  >
+                                    <PencilSquareIcon className="h-5 w-5" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDelete(chapter.id, chapter.name)}
+                                    disabled={isProcessing}
+                                    className="text-red-600 hover:text-red-900 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    title="Deactivate chapter"
+                                  >
+                                    <TrashIcon className="h-5 w-5" />
+                                  </button>
                                 </div>
                               </td>
                             </tr>
