@@ -84,7 +84,6 @@ model Chapter {
   id          String   @id @default(cuid())
   name        String
   slug        String?  @unique
-  description String?
   location    String?
   meetupUrl   String?
   discordUrl  String?
