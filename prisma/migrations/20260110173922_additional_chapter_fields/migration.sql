@@ -6,7 +6,6 @@
 */
 -- AlterTable
 ALTER TABLE "Chapter" ADD COLUMN     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
-ALTER TABLE "Chapter" ADD COLUMN     "description" STRING;
 ALTER TABLE "Chapter" ADD COLUMN     "discordUrl" STRING;
 ALTER TABLE "Chapter" ADD COLUMN     "isActive" BOOL NOT NULL DEFAULT true;
 ALTER TABLE "Chapter" ADD COLUMN     "location" STRING;
