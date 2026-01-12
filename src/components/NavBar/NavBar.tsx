@@ -19,6 +19,7 @@ import { signIn, signOut } from "next-auth/react";
 import { useState } from "react";
 import { api } from "@/utils/api";
 import ManageMembersModal from "@/components/ManageMembersModal/ManageMembersModal";
+import ManageTechStacksModal from "@/components/ManageTechStacksModal/ManageTechStacksModal";
 import NewEventModal from "@/components/NewEventModal/NewEventModal";
 import { IsUserEditor } from "@/hooks/IsUserEditor";
 
@@ -205,6 +206,7 @@ const HamburgerNavigationBar = ({
 
 export default function NavBar() {
   const [isManageMembersOpen, setIsManageMembersOpen] = useState(false);
+  const [isManageTechStacksOpen, setIsManageTechStacksOpen] = useState(false);
   const [isNewEventOpen, setIsNewEventOpen] = useState(false);
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
@@ -240,6 +242,11 @@ export default function NavBar() {
           current: false,
         },
         {
+          name: "Manage Tech Stacks",
+          onClick: () => setIsManageTechStacksOpen(true),
+          current: false,
+        },
+        {
           name: "Create Events",
           onClick: () => setIsNewEventOpen(true),
           current: false,
@@ -260,6 +267,10 @@ export default function NavBar() {
           <ManageMembersModal
             isOpen={isManageMembersOpen}
             setIsOpen={setIsManageMembersOpen}
+          />
+          <ManageTechStacksModal
+            isOpen={isManageTechStacksOpen}
+            setIsOpen={setIsManageTechStacksOpen}
           />
           <NewEventModal
             isOpen={isNewEventOpen}

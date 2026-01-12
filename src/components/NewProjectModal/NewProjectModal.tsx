@@ -4,7 +4,6 @@
 import { api } from "@/utils/api";
 import { Dialog, Transition } from "@headlessui/react";
 import { Autocomplete, TextField } from "@mui/material";
-import { type MasterTech } from "@prisma/client";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/router";
@@ -18,6 +17,7 @@ import {
 } from "react";
 import { useForm } from "react-hook-form";
 import { TextEditor } from "../TextEditor/TextEditor";
+import type { TechOutput } from "@/server/api/routers/schema/tech.schema";
 
 interface Props {
   isOpen: boolean;
@@ -76,7 +76,7 @@ export default function NewProjectModal({
   const cancelButtonRef = useRef(null);
   const { data, isLoading, isError } = api.techs.getAll.useQuery();
 
-  const [selectedTechs, setSelectedTechs] = useState<MasterTech[]>([]);
+  const [selectedTechs, setSelectedTechs] = useState<TechOutput[]>([]);
 
   const { handleSubmit, register, reset, watch } = useForm({
     defaultValues: {
@@ -97,7 +97,8 @@ export default function NewProjectModal({
           id: tech.masterTechId,
           label: tech.tech.label,
           slug: tech.tech.label.toLowerCase(),
-          imgUrl: tech.tech.imgUrl
+          imgUrl: tech.tech.imgUrl,
+          _count: { Tech: 0 }
         })) || []
       );
     } else {
