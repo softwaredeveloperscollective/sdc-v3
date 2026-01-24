@@ -3,7 +3,7 @@ import { Fragment, useRef, useState } from "react";
 import { api } from "@/utils/api";
 import StyledCircleLoader from "@/components/StyledCircleLoader/StyledCircleLoader";
 import Image from "next/image";
-import { PencilSquareIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { PencilSquareIcon, TrashIcon, PlusIcon } from "@heroicons/react/24/outline";
 
 interface ManageTechStacksModalProps {
   isOpen: boolean;
@@ -23,6 +23,7 @@ export default function ManageTechStacksModal({
   const cancelButtonRef = useRef(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [editingTechId, setEditingTechId] = useState<string | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
   const [editFormData, setEditFormData] = useState<EditFormData>({
     slug: "",
     label: "",
@@ -36,6 +37,16 @@ export default function ManageTechStacksModal({
     undefined,
     { enabled: isOpen }
   );
+
+  const { mutateAsync: createTech, isLoading: isCreatingTech } = 
+    api.techs.create.useMutation({
+      onSuccess: async () => {
+        await utils.techs.getAll.invalidate();
+        setIsCreating(false);
+        setEditFormData({ slug: "", label: "", imgUrl: "" });
+        setFormErrors({});
+      },
+    });
 
   const { mutateAsync: updateTech, isLoading: isUpdating } = 
     api.techs.update.useMutation({
@@ -69,10 +80,14 @@ export default function ManageTechStacksModal({
     if (!data.imgUrl.trim()) {
       errors.imgUrl = "Image URL is required";
     } else {
+      const normalizedUrl = data.imgUrl.trim().match(/^https?:\/\//i) 
+        ? data.imgUrl.trim() 
+        : `https://${data.imgUrl.trim()}`;
+      
       try {
-        new URL(data.imgUrl);
+        new URL(normalizedUrl);
       } catch {
-        errors.imgUrl = "Must be a valid URL";
+        errors.imgUrl = "Must be a valid URL or domain name";
       }
     }
 
@@ -80,8 +95,16 @@ export default function ManageTechStacksModal({
     return Object.keys(errors).length === 0;
   };
 
+  const handleCreateNew = () => {
+    setIsCreating(true);
+    setEditingTechId(null);
+    setEditFormData({ slug: "", label: "", imgUrl: "" });
+    setFormErrors({});
+  };
+
   const handleEdit = (tech: typeof techStacks[number]) => {
     setEditingTechId(tech.id);
+    setIsCreating(false);
     setEditFormData({
       slug: tech.slug,
       label: tech.label,
@@ -92,8 +115,26 @@ export default function ManageTechStacksModal({
 
   const handleCancelEdit = () => {
     setEditingTechId(null);
+    setIsCreating(false);
     setEditFormData({ slug: "", label: "", imgUrl: "" });
     setFormErrors({});
+  };
+
+  const handleSaveNew = async () => {
+    if (!validateForm(editFormData)) {
+      return;
+    }
+
+    try {
+      await createTech({
+        slug: editFormData.slug.trim() || undefined,
+        label: editFormData.label.trim(),
+        imgUrl: editFormData.imgUrl.trim(),
+      });
+    } catch (error) {
+      console.error("Error creating tech stack:", error);
+      alert(error instanceof Error ? error.message : "Failed to create tech stack");
+    }
   };
 
   const handleSaveEdit = async (techId: string) => {
@@ -177,6 +218,18 @@ export default function ManageTechStacksModal({
                     </p>
                   </div>
 
+                  <div className="mt-4 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={handleCreateNew}
+                      disabled={isCreating || editingTechId !== null}
+                      className="inline-flex items-center gap-2 rounded-md border border-transparent bg-gray-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <PlusIcon className="h-5 w-5" />
+                      Add New Tech Stack
+                    </button>
+                  </div>
+
                   {/* Search Bar */}
                   <div className="mt-4">
                     <input
@@ -196,6 +249,94 @@ export default function ManageTechStacksModal({
                       <p className="text-sm text-red-500 text-center">
                         Error loading tech stacks
                       </p>
+                    )}
+
+                    {isCreating && (
+                      <div className="mb-4 rounded-lg border-2 border-gray-600 bg-gray-50 px-4 py-4 shadow-md">
+                        <div className="mb-2">
+                          <h4 className="text-sm font-semibold text-gray-900">Create New Tech Stack</h4>
+                        </div>
+                        <div className="space-y-3">
+                          <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-1">
+                              Label *
+                            </label>
+                            <input
+                              type="text"
+                              value={editFormData.label}
+                              onChange={(e) =>
+                                setEditFormData({ ...editFormData, label: e.target.value })
+                              }
+                              className={`w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 text-sm p-2 border ${
+                                formErrors.label ? "border-red-500" : ""
+                              }`}
+                              placeholder="e.g., React"
+                            />
+                            {formErrors.label && (
+                              <p className="mt-1 text-xs text-red-500">{formErrors.label}</p>
+                            )}
+                          </div>
+
+                          <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-1">
+                              Slug (optional)
+                            </label>
+                            <input
+                              type="text"
+                              value={editFormData.slug}
+                              onChange={(e) =>
+                                setEditFormData({ ...editFormData, slug: e.target.value })
+                              }
+                              className="w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 text-sm p-2 border"
+                              placeholder="Auto-generated from label if empty"
+                            />
+                            <p className="mt-1 text-xs text-gray-500">
+                              Leave empty to auto-generate from label
+                            </p>
+                          </div>
+
+                          <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-1">
+                              Image URL *
+                            </label>
+                            <input
+                              type="text"
+                              value={editFormData.imgUrl}
+                              onChange={(e) =>
+                                setEditFormData({ ...editFormData, imgUrl: e.target.value })
+                              }
+                              className={`w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 text-sm p-2 border ${
+                                formErrors.imgUrl ? "border-red-500" : ""
+                              }`}
+                              placeholder="https://user-images.githubusercontent.com/..."
+                            />
+                            {formErrors.imgUrl ? (
+                              <p className="mt-1 text-xs text-red-500">{formErrors.imgUrl}</p>
+                            ) : (
+                              <p className="mt-1 text-xs text-blue-600">
+                                Recommended: Use images from https://user-images.githubusercontent.com for better quality
+                              </p>
+                            )}
+                          </div>
+
+                          <div className="flex justify-end space-x-2 pt-2">
+                            <button
+                              onClick={handleCancelEdit}
+                              disabled={isCreatingTech}
+                              className="px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              onClick={handleSaveNew}
+                              disabled={isCreatingTech}
+                              className="px-3 py-1 text-sm font-medium text-white bg-gray-600 rounded-md hover:bg-gray-700 disabled:opacity-50"
+                            >
+                              {isCreatingTech ? "Creating..." : "Create"}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
                     )}
 
                     {filteredTechStacks && filteredTechStacks.length > 0 && (
@@ -259,10 +400,14 @@ export default function ManageTechStacksModal({
                                     className={`w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 text-sm p-2 border ${
                                       formErrors.imgUrl ? "border-red-500" : ""
                                     }`}
-                                    placeholder="https://..."
+                                    placeholder="https://user-images.githubusercontent.com/..."
                                   />
-                                  {formErrors.imgUrl && (
+                                  {formErrors.imgUrl ? (
                                     <p className="mt-1 text-xs text-red-500">{formErrors.imgUrl}</p>
+                                  ) : (
+                                    <p className="mt-1 text-xs text-blue-600">
+                                      Recommended: Use images from https://user-images.githubusercontent.com for better reliability
+                                    </p>
                                   )}
                                 </div>
 
@@ -314,7 +459,7 @@ export default function ManageTechStacksModal({
                                 <div className="flex items-center space-x-2">
                                   <button
                                     onClick={() => handleEdit(tech)}
-                                    disabled={isDeleting}
+                                    disabled={isDeleting || isCreating}
                                     className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md disabled:opacity-50"
                                     title="Edit tech stack"
                                   >
@@ -322,7 +467,7 @@ export default function ManageTechStacksModal({
                                   </button>
                                   <button
                                     onClick={() => handleDelete(tech.id, tech.label, tech._count?.Tech || 0)}
-                                    disabled={isDeleting || (tech._count?.Tech || 0) > 0}
+                                    disabled={isDeleting || (tech._count?.Tech || 0) > 0 || isCreating}
                                     className={`p-2 rounded-md disabled:opacity-50 ${
                                       (tech._count?.Tech || 0) > 0
                                         ? 'text-gray-400 cursor-not-allowed'
@@ -344,7 +489,7 @@ export default function ManageTechStacksModal({
                       </div>
                     )}
 
-                    {filteredTechStacks && filteredTechStacks.length === 0 && !isLoading && (
+                    {filteredTechStacks && filteredTechStacks.length === 0 && !isLoading && !isCreating && (
                       <p className="text-sm text-gray-500 text-center py-8">
                         {searchTerm 
                           ? `No tech stacks found matching "${searchTerm}"`
