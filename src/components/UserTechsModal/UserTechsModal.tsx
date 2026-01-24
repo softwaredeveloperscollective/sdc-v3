@@ -4,17 +4,17 @@
 import { api } from "@/utils/api";
 import { Dialog, Transition } from "@headlessui/react";
 import { Autocomplete, TextField } from "@mui/material";
-import { type MasterTech } from "@prisma/client";
+import type { TechOutput } from "@/server/api/routers/schema/tech.schema";
 import Image from "next/image";
 import { Fragment, useRef, type Dispatch, type SetStateAction } from "react";
 
 interface UserTechsModalProps {
   isOpen: boolean;
   setIsOpen: Dispatch<SetStateAction<boolean>>;
-  data: MasterTech[] | undefined;
+  data: TechOutput[] | undefined;
   ogTechs: { tech: { label: string }; id: string }[] | undefined;
-  selectedTechs: MasterTech[];
-  setSelectedTechs: Dispatch<SetStateAction<MasterTech[]>>;
+  selectedTechs: TechOutput[];
+  setSelectedTechs: Dispatch<SetStateAction<TechOutput[]>>;
   userId: string | undefined;
 }
 
@@ -41,7 +41,7 @@ export default function UserTechsModal({
     if (!userId || !ogTechs) return;
     await updateUser({
       id: userId,
-      techs: selectedTechs.map((tech: MasterTech) => tech.id),
+      techs: selectedTechs.map((tech: TechOutput) => tech.id),
       ogTechs: ogTechs.map((tech) => tech.id),
     });
     setIsOpen(false);
