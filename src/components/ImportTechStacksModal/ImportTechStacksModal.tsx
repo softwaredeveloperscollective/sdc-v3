@@ -55,7 +55,8 @@ export default function ImportTechStacksModal({
   };
 
   const validateRecord = (
-    record: Omit<ImportRecord, 'tempId' | 'status' | 'errors' | 'warnings'>
+    record: Omit<ImportRecord, 'tempId' | 'status' | 'errors' | 'warnings'>,
+    tempId?: string
   ): { 
     valid: boolean; 
     errors: string[]; 
@@ -123,17 +124,19 @@ export default function ImportTechStacksModal({
       }
     }
 
-    const currentRecords = records.filter(r => r.tempId !== record.tempId);
-    if (currentRecords.length > 0 && record.label.trim()) {
-      const slug = record.slug.trim() || generateSlug(record.label.trim());
-      const batchDuplicate = currentRecords.find(r => {
-        const rSlug = r.slug.trim() || generateSlug(r.label.trim());
-        return rSlug.toLowerCase() === slug.toLowerCase();
-      });
+    if (tempId) {
+      const currentRecords = records.filter(r => r.tempId !== tempId);
+      if (currentRecords.length > 0 && record.label.trim()) {
+        const slug = record.slug.trim() || generateSlug(record.label.trim());
+        const batchDuplicate = currentRecords.find(r => {
+          const rSlug = r.slug.trim() || generateSlug(r.label.trim());
+          return rSlug.toLowerCase() === slug.toLowerCase();
+        });
 
-      if (batchDuplicate) {
-        isDuplicate = true;
-        errors.push(`Duplicate in import batch`);
+        if (batchDuplicate) {
+          isDuplicate = true;
+          errors.push(`Duplicate in import batch`);
+        }
       }
     }
 
@@ -166,30 +169,25 @@ export default function ImportTechStacksModal({
       const slug = slugIndex !== -1 ? values[slugIndex] || '' : '';
       const imgUrl = values[imgUrlIndex] || '';
 
+      const tempId = `temp-${Date.now()}-${index}`;
+      const validation = validateRecord({ label, slug, imgUrl }, tempId);
+
       return {
-        tempId: `temp-${Date.now()}-${index}`,
+        tempId,
         label,
         slug,
         imgUrl,
-        status: 'pending' as const,
-        errors: [],
-        warnings: [],
-      };
-    });
-
-    return parsedRecords.map(record => {
-      const validation = validateRecord(record);
-      return {
-        ...record,
-        status: validation.isDuplicate 
+        status: (validation.isDuplicate 
           ? 'duplicate' 
           : validation.valid 
             ? 'valid' 
-            : 'invalid',
+            : 'invalid') as ImportRecord['status'],
         errors: validation.errors,
         warnings: validation.warnings,
       };
     });
+
+    return parsedRecords;
   };
 
   const parseJSON = (text: string): ImportRecord[] => {
@@ -202,30 +200,25 @@ export default function ImportTechStacksModal({
         const slug = item.slug || '';
         const imgUrl = item.imgUrl || item.img_url || item.imageUrl || '';
 
+        const tempId = `temp-${Date.now()}-${index}`;
+        const validation = validateRecord({ label, slug, imgUrl }, tempId);
+
         return {
-          tempId: `temp-${Date.now()}-${index}`,
+          tempId,
           label,
           slug,
           imgUrl,
-          status: 'pending' as const,
-          errors: [],
-          warnings: [],
-        };
-      });
-
-      return parsedRecords.map(record => {
-        const validation = validateRecord(record);
-        return {
-          ...record,
-          status: validation.isDuplicate 
+          status: (validation.isDuplicate 
             ? 'duplicate' 
             : validation.valid 
               ? 'valid' 
-              : 'invalid',
+              : 'invalid') as ImportRecord['status'],
           errors: validation.errors,
           warnings: validation.warnings,
         };
       });
+
+      return parsedRecords;
     } catch (error) {
       alert('Invalid JSON format');
       return [];
@@ -270,7 +263,7 @@ export default function ImportTechStacksModal({
   };
 
   const handleSaveEdit = (tempId: string) => {
-    const validation = validateRecord(editForm);
+    const validation = validateRecord(editForm, tempId);
     
     setRecords(prev => prev.map(r => 
       r.tempId === tempId 
@@ -295,7 +288,7 @@ export default function ImportTechStacksModal({
     setRecords(prev => {
       const newRecords = prev.filter(r => r.tempId !== tempId);
       return newRecords.map(record => {
-        const validation = validateRecord(record);
+        const validation = validateRecord(record, record.tempId);
         return {
           ...record,
           status: validation.isDuplicate 
@@ -406,7 +399,7 @@ export default function ImportTechStacksModal({
 
   const handleRefreshValidation = () => {
     setRecords(prev => prev.map(record => {
-      const validation = validateRecord(record);
+      const validation = validateRecord(record, record.tempId);
       return {
         ...record,
         status: validation.isDuplicate 

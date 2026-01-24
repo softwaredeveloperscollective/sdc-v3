@@ -237,12 +237,12 @@ export default function NavBar() {
       current: false,
       subLinks: [
         {
-          name: "Manage Members",
+          name: "Members",
           onClick: () => setIsManageMembersOpen(true),
           current: false,
         },
         {
-          name: "Manage Tech Stacks",
+          name: "Tech Stacks",
           onClick: () => setIsManageTechStacksOpen(true),
           current: false,
         },

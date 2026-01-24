@@ -229,7 +229,7 @@ export default function ManageTechStacksModal({
                         as="h3"
                         className="text-lg font-medium leading-6 text-gray-900"
                       >
-                        Manage Tech Stacks
+                        Tech Stacks
                       </Dialog.Title>
                       <p className="mt-2 text-sm text-gray-500">
                         View, edit, and manage all technology stacks in the system
