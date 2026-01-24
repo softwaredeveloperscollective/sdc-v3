@@ -22,6 +22,25 @@ export const userRouter = createTRPCRouter({
     });
   }),
 
+  getAdmins: publicProcedure.query(async ({ ctx }) => {
+    const admins = await ctx.prisma.user.findMany({
+      where: {
+        role: "ADMIN",
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        image: true,
+      },
+      orderBy: {
+        name: "asc",
+      },
+    });
+
+    return admins;
+  }),
+
   updateRole: protectedProcedure
     .input(
       z.object({
