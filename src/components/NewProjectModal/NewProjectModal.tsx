@@ -4,7 +4,6 @@
 import { api } from "@/utils/api";
 import { Dialog, Transition } from "@headlessui/react";
 import { Autocomplete, TextField } from "@mui/material";
-import { type MasterTech } from "@prisma/client";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { useRouter } from "next/router";
@@ -18,6 +17,8 @@ import {
 } from "react";
 import { useForm } from "react-hook-form";
 import { TextEditor } from "../TextEditor/TextEditor";
+import type { TechOutput } from "@/server/api/routers/schema/tech.schema";
+import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
 
 interface Props {
   isOpen: boolean;
@@ -75,14 +76,19 @@ export default function NewProjectModal({
   const session = useSession();
   const cancelButtonRef = useRef(null);
   const { data, isLoading, isError } = api.techs.getAll.useQuery();
+  const [showMissingStackInfo, setShowMissingStackInfo] = useState(false);
 
-  const [selectedTechs, setSelectedTechs] = useState<MasterTech[]>([]);
+  const [selectedTechs, setSelectedTechs] = useState<TechOutput[]>([]);
 
   const { handleSubmit, register, reset, watch } = useForm({
     defaultValues: {
       title: '',
       description: ''
     }
+  });
+
+  const { data: adminUsers } = api.users.getAdmins.useQuery(undefined, {
+    enabled: isOpen && showMissingStackInfo,
   });
 
   useEffect(() => {
@@ -97,7 +103,8 @@ export default function NewProjectModal({
           id: tech.masterTechId,
           label: tech.tech.label,
           slug: tech.tech.label.toLowerCase(),
-          imgUrl: tech.tech.imgUrl
+          imgUrl: tech.tech.imgUrl,
+          _count: { Tech: 0 }
         })) || []
       );
     } else {
@@ -232,6 +239,104 @@ export default function NewProjectModal({
                                 />
                               )}
                             />
+                          </div>
+
+                          <div className="col-span-6">
+                            <button
+                              type="button"
+                              onClick={() => setShowMissingStackInfo(!showMissingStackInfo)}
+                              className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
+                            >
+                              {showMissingStackInfo ? (
+                                <ChevronUpIcon className="h-4 w-4" />
+                              ) : (
+                                <ChevronDownIcon className="h-4 w-4" />
+                              )}
+                              Looking for a missing stack?
+                            </button>
+
+                            {showMissingStackInfo && (
+                              <div className="mt-3 rounded-md bg-blue-50 p-4 border border-blue-200">
+                                <h4 className="text-sm font-medium text-blue-900 mb-2">
+                                  Request New Tech Stacks
+                                </h4>
+                                <p className="text-xs text-blue-800 mb-3">
+                                  If you need a tech stack that's not listed, you can request it by creating a CSV or JSON file with the following format:
+                                </p>
+
+                                <div className="space-y-3">
+                                  <div className="bg-white p-3 rounded border border-blue-200">
+                                    <p className="text-xs font-semibold text-gray-700 mb-1">CSV Format:</p>
+                                    <pre className="text-xs text-gray-600 overflow-x-auto">
+{`label,slug,imgUrl
+React Native,react-native,https://example.com/icon.png`}
+                                    </pre>
+                                  </div>
+
+                                  <div className="bg-white p-3 rounded border border-blue-200">
+                                    <p className="text-xs font-semibold text-gray-700 mb-1">JSON Format:</p>
+                                    <pre className="text-xs text-gray-600 overflow-x-auto">
+{`[
+  {
+    "label": "React Native",
+    "slug": "react-native",
+    "imgUrl": "https://example.com/icon.png"
+  }
+]`}
+                                    </pre>
+                                  </div>
+
+                                  <div className="bg-white p-3 rounded border border-blue-200">
+                                    <p className="text-xs font-semibold text-gray-700 mb-2">
+                                      Send your file to one of our administrators:
+                                    </p>
+                                    {adminUsers && adminUsers.length > 0 ? (
+                                      <ul className="space-y-2">
+                                        {adminUsers.map((admin) => (
+                                          <li key={admin.id} className="flex items-center gap-2">
+                                            <Image
+                                              src={admin.image || '/favicon.ico'}
+                                              alt={admin.name || 'Admin'}
+                                              width={24}
+                                              height={24}
+                                              className="rounded-full"
+                                            />
+                                            <div className="flex-1">
+                                              <p className="text-xs font-medium text-gray-900">
+                                                {admin.name}
+                                              </p>
+                                              <a
+                                                href={`mailto:${admin.email}?subject=SDC - New Tech Stack Request`}
+                                                className="text-xs text-blue-600 hover:text-blue-800"
+                                              >
+                                                {admin.email}
+                                              </a>
+                                            </div>
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    ) : (
+                                      <p className="text-xs text-gray-600">
+                                        Loading admin contacts...
+                                      </p>
+                                    )}
+                                  </div>
+
+                                  <p className="text-xs text-blue-700">
+                                    <strong>Note:</strong> Slug is optional - it will be auto-generated from the label if not provided. 
+                                    For best results, use icon URLs from{" "}
+                                    <a 
+                                      href="https://user-images.githubusercontent.com" 
+                                      target="_blank" 
+                                      rel="noopener noreferrer"
+                                      className="underline"
+                                    >
+                                      user-images.githubusercontent.com
+                                    </a>
+                                  </p>
+                                </div>
+                              </div>
+                            )}
                           </div>
 
                           <div className="col-span-6">

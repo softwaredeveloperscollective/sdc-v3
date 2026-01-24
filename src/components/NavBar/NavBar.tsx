@@ -19,6 +19,9 @@ import { signIn, signOut } from "next-auth/react";
 import { useState } from "react";
 import { api } from "@/utils/api";
 import ManageMembersModal from "@/components/ManageMembersModal/ManageMembersModal";
+import ManageTechStacksModal from "@/components/ManageTechStacksModal/ManageTechStacksModal";
+import NewEventModal from "@/components/NewEventModal/NewEventModal";
+import { IsUserEditor } from "@/hooks/IsUserEditor";
 
 
 type Chapter = {
@@ -28,39 +31,39 @@ type Chapter = {
 };
 
 const HoverMenu = ({ navigation_item_with_sublinks, currentPath }) => {
-  const [isHovered, setIsHovered] = useState(false);
+  const router = useRouter();
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
     <>
       <span
-        style={{ position: "relative", display: "inline-flex" }}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        className="relative inline-flex items-center border-b-2 border-transparent px-1 pt-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
+        onMouseEnter={() => setIsOpen(true)}
+        onMouseLeave={() => setIsOpen(false)}
       >
-        <Link
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-          key={navigation_item_with_sublinks.name}
-          href=""
-          className={classNames(
-            "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700",
-            "inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium"
-          )}
-        >
-          {navigation_item_with_sublinks.name}
-        </Link>
-
-        {isHovered && (
-          <div className="absolute left-0 top-full z-50 w-48 rounded-md bg-white shadow-lg">
-            <div className="py-1">
-              {navigation_item_with_sublinks.subLinks.map((item) => (
+        {navigation_item_with_sublinks.name}
+        {isOpen && (
+          <div className="absolute left-0 top-full z-10 mt-1 w-48 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5">
+            <div
+              className="py-1"
+              onMouseEnter={() => setIsOpen(true)}
+              onMouseLeave={() => setIsOpen(false)}
+            >
+              {navigation_item_with_sublinks.subLinks?.map((item) => (
                 <Link
                   key={item.name}
-                  href={item.href}
+                  href={item.href || "#"}
+                  onClick={(e) => {
+                    if (item.onClick) {
+                      e.preventDefault();
+                      item.onClick();
+                    }
+                  }}
                   className={classNames(
                     currentRouteIsActive(currentPath, item.href)
                       ? "bg-gray-100 text-gray-900"
                       : "text-gray-700 hover:bg-gray-100 hover:text-gray-900",
-                    "block px-4 py-2 text-sm"
+                    "block px-4 py-2 text-sm cursor-pointer"
                   )}
                 >
                   {item.name}
@@ -79,12 +82,15 @@ const TopNavigationBar = ({ currentPath, navigation, chaptersLoading }) => {
     <>
       {navigation.map((item) => {
         if (item.subLinks) {
-          return chaptersLoading ? (
-            <span className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-400">
+          // Show loading only for Chapters, not for Admin
+          const isChaptersItem = item.name === "Chapters";
+          return chaptersLoading && isChaptersItem ? (
+            <span key={item.name} className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-400">
               Loading Chapters...
             </span>
           ) : (
             <HoverMenu
+              key={item.name}
               navigation_item_with_sublinks={item}
               currentPath={currentPath}
             />
@@ -140,43 +146,36 @@ const HamburgerNavigationBar = ({
                 </Disclosure.Button>
               );
             } else {
-              return chaptersLoading ? (
-                <Disclosure.Button
-                  key={item.name}
-                  as="span"
-                  className="block border-l-4 border-transparent py-2 pl-3 pr-4 font-medium text-gray-400"
-                >
-                  Loading Chapters...
-                </Disclosure.Button>
-              ) : (
+              return (
                 <>
                   <Disclosure.Button
                     key={item.name}
-                    as="a"
-                    href={""}
-                    className={classNames(
-                      "block cursor-default select-none border-l-4 border-transparent py-2 pl-3 pr-4 font-medium text-gray-500"
-                    )}
+                    as="span"
+                    className="block cursor-default select-none border-l-4 border-transparent py-2 pl-3 pr-4 font-medium text-gray-500"
                   >
                     {item.name}
                   </Disclosure.Button>
-                  <>
-                    {item.subLinks.map((subItem) => (
-                      <Disclosure.Button
-                        key={subItem.name}
-                        as="a"
-                        href={subItem.href}
-                        className={classNames(
-                          currentRouteIsActive(currentPath, subItem.href)
-                            ? "border-gray-500 bg-gray-50 text-gray-700"
-                            : "border-transparent text-gray-500 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700",
-                          "block border-l-4 py-2 pl-8 pr-4 text-base font-medium"
-                        )}
-                      >
-                        {subItem.name}
-                      </Disclosure.Button>
-                    ))}
-                  </>
+                  {item.subLinks.map((subItem) => (
+                    <Disclosure.Button
+                      key={subItem.name}
+                      as="a"
+                      href={subItem.href || "#"}
+                      onClick={(e) => {
+                        if (subItem.onClick) {
+                          e.preventDefault();
+                          subItem.onClick();
+                        }
+                      }}
+                      className={classNames(
+                        currentRouteIsActive(currentPath, subItem.href)
+                          ? "border-gray-500 bg-gray-50 text-gray-700"
+                          : "border-transparent text-gray-500 hover:border-gray-300 hover:bg-gray-50 hover:text-gray-700",
+                        "block border-l-4 py-2 pl-8 pr-4 text-base font-medium"
+                      )}
+                    >
+                      {subItem.name}
+                    </Disclosure.Button>
+                  ))}
                 </>
               );
             }
@@ -207,12 +206,17 @@ const HamburgerNavigationBar = ({
 
 export default function NavBar() {
   const [isManageMembersOpen, setIsManageMembersOpen] = useState(false);
+  const [isManageTechStacksOpen, setIsManageTechStacksOpen] = useState(false);
+  const [isNewEventOpen, setIsNewEventOpen] = useState(false);
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
   const {
     data: chapters = [],
     isLoading: chaptersLoading,
   } = api.chapters.getAll.useQuery();
+
+  const user = useUserSession();
+  const userIsEditor = IsUserEditor();
 
   const navigation = [
     { name: "Home", href: "/", current: false },
@@ -226,9 +230,31 @@ export default function NavBar() {
         current: false,
       })),
     },
+    // Add Admin dropdown - only show if user is admin
+    ...(userIsEditor && user ? [{
+      name: "Admin",
+      href: "",
+      current: false,
+      subLinks: [
+        {
+          name: "Members",
+          onClick: () => setIsManageMembersOpen(true),
+          current: false,
+        },
+        {
+          name: "Tech Stacks",
+          onClick: () => setIsManageTechStacksOpen(true),
+          current: false,
+        },
+        {
+          name: "Create Events",
+          onClick: () => setIsNewEventOpen(true),
+          current: false,
+        },
+      ],
+    }] : []),
   ];
   const router = useRouter();
-  const user = useUserSession();
   const pathname = router.pathname;
 
   const handleButtonClick = () => {
@@ -241,6 +267,14 @@ export default function NavBar() {
           <ManageMembersModal
             isOpen={isManageMembersOpen}
             setIsOpen={setIsManageMembersOpen}
+          />
+          <ManageTechStacksModal
+            isOpen={isManageTechStacksOpen}
+            setIsOpen={setIsManageTechStacksOpen}
+          />
+          <NewEventModal
+            isOpen={isNewEventOpen}
+            setIsOpen={setIsNewEventOpen}
           />
           <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
             <div className="relative flex h-16 justify-between">
@@ -281,17 +315,6 @@ export default function NavBar() {
                 <div className="hidden items-center gap-4 sm:flex sm:flex-row sm:justify-center">
                   {user && (
                     <>
-                      {/* Consider the following line if we want mods to have this ability, or just admins. */}
-                      {/* {(user.role === "MOD" || user.role === "ADMIN") && ( */}
-                      {(user.role === "ADMIN") && (
-                        <button
-                          type="button"
-                          className="inline-flex items-center rounded-md border border-transparent bg-gray-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
-                          onClick={() => setIsManageMembersOpen(true)}
-                        >
-                          Manage Members
-                        </button>
-                      )}
                       <Link
                         href={`/user/${user.id}`}
                         className="group block flex-shrink-0"

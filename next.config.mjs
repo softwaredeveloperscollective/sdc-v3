@@ -25,6 +25,12 @@ const config = {
       "user-images.githubusercontent.com",
       "avatars.githubusercontent.com"
     ],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+    ],
   },
 };
 export default config;

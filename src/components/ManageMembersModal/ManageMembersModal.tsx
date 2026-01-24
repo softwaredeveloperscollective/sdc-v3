@@ -72,7 +72,7 @@ export default function ManageMembersModal({
                       as="h3"
                       className="text-lg font-medium leading-6 text-gray-900"
                     >
-                      Manage Members
+                      Members
                     </Dialog.Title>
                   </div>
 

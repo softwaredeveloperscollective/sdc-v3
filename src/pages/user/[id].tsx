@@ -5,9 +5,9 @@ import UserCard from "@/components/User/UserCard";
 import UserForm from "@/components/UserForm/UserForm";
 import UserTechsModal from "@/components/UserTechsModal/UserTechsModal";
 import { api } from "@/utils/api";
-import type { MasterTech } from "@prisma/client";
 import { useRouter } from "next/router";
 import { useState } from "react";
+import type { TechOutput } from "@/server/api/routers/schema/tech.schema";
 
 export interface ProfileEditProps {
   title: string;
@@ -21,7 +21,7 @@ export default function UserDetail() {
   const router = useRouter();
   const utils = api.useContext();
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedTechs, setSelectedTechs] = useState<MasterTech[]>([]);
+  const [selectedTechs, setSelectedTechs] = useState<TechOutput[]>([]);
 
   const techs = api.techs.getAll.useQuery();
   const { mutateAsync: updateUser } = api.users.update.useMutation({
@@ -53,7 +53,7 @@ export default function UserDetail() {
       twitter: data.twitter,
       linkedin: data.linkedin,
       website: data.website,
-      techs: selectedTechs.map((tech: MasterTech) => tech.id),
+      techs: selectedTechs.map((tech: TechOutput) => tech.id),
     });
   };
 
