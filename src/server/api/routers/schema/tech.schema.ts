@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const createTechSchema = z.object({
-  slug: z.string().min(1, "Slug is required").toLowerCase(),
+  slug: z.string().min(1).toLowerCase().optional().or(z.literal('')).transform(val => val || undefined),
   label: z.string().min(1, "Label is required"),
   imgUrl: z.string().url("Must be a valid URL"),
 });

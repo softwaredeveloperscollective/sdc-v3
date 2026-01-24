@@ -11,6 +11,13 @@ import {
 } from "./schema/tech.schema";
 import { z } from "zod";
 
+function generateSlug(label: string): string {
+  return label
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 export const techRouter = createTRPCRouter({
   getAll: publicProcedure
     .output(z.array(techOutputSchema))
@@ -86,8 +93,12 @@ export const techRouter = createTRPCRouter({
         throw new Error("Unauthorized");
       }
 
+      const slug = input.slug
+        ? input.slug.toLowerCase()
+        : generateSlug(input.label);
+
       const existing = await ctx.prisma.masterTech.findFirst({
-        where: { slug: input.slug },
+        where: { slug },
       });
 
       if (existing) {
@@ -96,7 +107,7 @@ export const techRouter = createTRPCRouter({
 
       const tech = await ctx.prisma.masterTech.create({
         data: {
-          slug: input.slug.toLowerCase(),
+          slug,
           label: input.label,
           imgUrl: input.imgUrl,
         },
@@ -114,7 +125,31 @@ export const techRouter = createTRPCRouter({
 
       const { id, ...data } = input;
 
-      if (data.slug) {
+      if (data.slug !== undefined) {
+        const slug = data.slug
+          ? data.slug.toLowerCase()
+          : data.label
+          ? generateSlug(data.label)
+          : undefined;
+
+        if (slug) {
+          const existing = await ctx.prisma.masterTech.findFirst({
+            where: {
+              slug,
+              NOT: { id },
+            },
+          });
+
+          if (existing) {
+            throw new Error("A tech stack with this slug already exists");
+          }
+
+          data.slug = slug;
+        }
+      } else if (data.label) {
+        // If label is being updated but slug is not provided, generate new slug
+        data.slug = generateSlug(data.label);
+
         const existing = await ctx.prisma.masterTech.findFirst({
           where: {
             slug: data.slug,
@@ -125,8 +160,6 @@ export const techRouter = createTRPCRouter({
         if (existing) {
           throw new Error("A tech stack with this slug already exists");
         }
-
-        data.slug = data.slug.toLowerCase();
       }
 
       const tech = await ctx.prisma.masterTech.update({
