@@ -43,11 +43,12 @@ const HoverMenu = ({ navigation_item_with_sublinks, currentPath }) => {
       >
         {navigation_item_with_sublinks.name}
         {isOpen && (
-          <div className="absolute left-0 top-full z-10 mt-1 w-48 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5">
+          <div className="absolute left-0 top-full z-10 w-48 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5">
             <div
               className="py-1"
-              onMouseEnter={() => setIsOpen(true)}
-              onMouseLeave={() => setIsOpen(false)}
+              // disabled due to conflic with parent element
+              // onMouseEnter={() => setIsOpen(true)}
+              // onMouseLeave={() => setIsOpen(false)}
             >
               {navigation_item_with_sublinks.subLinks?.map((item) => (
                 <Link
